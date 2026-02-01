@@ -40,5 +40,12 @@ enable_confirmations = false  # Disabled for local dev - no email verification n
 enable_signup = false
 enable_confirmations = false
 
+# Google OAuth - set these env vars or replace with actual values
+[auth.external.google]
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+redirect_uri = "http://127.0.0.1:54321/auth/v1/callback"
+
 [analytics]
 enabled = false
