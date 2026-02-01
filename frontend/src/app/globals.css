@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --foreground: #3D2B1F;
+  --background: #FAF7F2;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-dm-sans), system-ui, sans-serif;
+}
+
+/* Focus styles for accessibility */
+:focus-visible {
+  outline: 2px solid #CC5500;
+  outline-offset: 2px;
+}
+
+/* Smooth scrolling */
+html {
+  scroll-behavior: smooth;
+}
