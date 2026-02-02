@@ -1,9 +1,6 @@
 -- Side A Initial Schema
 -- This migration sets up the core data model with RLS policies
 
--- Enable UUID extension
-CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
-
 -- Mood enum for play logging
 CREATE TYPE mood AS ENUM (
   'Morning',
@@ -19,7 +16,7 @@ CREATE TYPE collection_role AS ENUM ('owner', 'member');
 
 -- Collections table
 CREATE TABLE collections (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   owner_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -27,7 +24,7 @@ CREATE TABLE collections (
 
 -- Collection members (links users to collections)
 CREATE TABLE collection_members (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   role collection_role NOT NULL DEFAULT 'member',
@@ -37,7 +34,7 @@ CREATE TABLE collection_members (
 
 -- Records (album entries in a collection)
 CREATE TABLE records (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   collection_id UUID NOT NULL REFERENCES collections(id) ON DELETE CASCADE,
   title TEXT NOT NULL,
   artist TEXT NOT NULL,
@@ -48,7 +45,7 @@ CREATE TABLE records (
 
 -- Plays (play log entries)
 CREATE TABLE plays (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   record_id UUID NOT NULL REFERENCES records(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   played_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -57,7 +54,7 @@ CREATE TABLE plays (
 
 -- Notes (per-record notes with star ratings)
 CREATE TABLE notes (
-  id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   record_id UUID NOT NULL REFERENCES records(id) ON DELETE CASCADE,
   user_id UUID NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
   star_rating INTEGER CHECK (star_rating >= 1 AND star_rating <= 5),
