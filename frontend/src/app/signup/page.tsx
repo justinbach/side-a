@@ -31,7 +31,7 @@ export default function SignupPage() {
     setLoading(true)
 
     const supabase = createClient()
-    const { error } = await supabase.auth.signUp({
+    const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -45,6 +45,14 @@ export default function SignupPage() {
       return
     }
 
+    // If session exists, user is already confirmed (email confirmation disabled)
+    if (data.session) {
+      router.push('/collection')
+      router.refresh()
+      return
+    }
+
+    // Otherwise, show email confirmation message
     setSuccess(true)
     setLoading(false)
   }
