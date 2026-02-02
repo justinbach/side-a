@@ -4,6 +4,7 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { DeleteRecordButton } from '@/components/delete-record-button'
 import { PlayButton } from '@/components/play-button'
+import { NotesSection } from '@/components/notes-section'
 
 export default async function RecordDetailPage({
   params,
@@ -34,6 +35,14 @@ export default async function RecordDetailPage({
     .select('id, played_at, mood')
     .eq('record_id', id)
     .order('played_at', { ascending: false })
+
+  // Fetch user's note for this record
+  const { data: note } = await supabase
+    .from('notes')
+    .select('id, star_rating, text, updated_at')
+    .eq('record_id', id)
+    .eq('user_id', user.id)
+    .single()
 
   return (
     <main className="min-h-screen p-8">
@@ -86,6 +95,11 @@ export default async function RecordDetailPage({
             {/* Play Button with mood picker and history */}
             <div className="mb-8">
               <PlayButton recordId={record.id} initialPlays={plays || []} />
+            </div>
+
+            {/* Notes & Rating */}
+            <div className="mb-8 p-6 bg-warm-white rounded-xl border border-walnut/10">
+              <NotesSection recordId={record.id} initialNote={note} />
             </div>
 
             {/* Metadata */}
