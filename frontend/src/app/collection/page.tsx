@@ -11,10 +11,23 @@ export default async function CollectionPage() {
     redirect('/login')
   }
 
-  // Get user's collection
+  // Accept any pending invitations for this user
+  const { data: pendingInvitations } = await supabase
+    .from('invitations')
+    .select('id')
+    .eq('email', user.email)
+    .is('accepted_at', null)
+
+  if (pendingInvitations && pendingInvitations.length > 0) {
+    for (const inv of pendingInvitations) {
+      await supabase.rpc('accept_invitation', { invitation_id: inv.id })
+    }
+  }
+
+  // Get user's collections (owned or member of)
   let { data: collections } = await supabase
     .from('collections')
-    .select('id, name')
+    .select('id, name, owner_id')
     .limit(1)
 
   let collection = collections?.[0] ?? null
@@ -35,7 +48,7 @@ export default async function CollectionPage() {
     const { data: newCollection, error } = await supabaseAdmin
       .from('collections')
       .insert({ name: 'My Collection', owner_id: user.id })
-      .select('id, name')
+      .select('id, name, owner_id')
       .single()
 
     if (error) {
@@ -59,5 +72,7 @@ export default async function CollectionPage() {
     .eq('collection_id', collection.id)
     .order('created_at', { ascending: false })
 
-  return <CollectionView collection={collection} records={records} />
+  const isOwner = collection.owner_id === user.id
+
+  return <CollectionView collection={collection} records={records} isOwner={isOwner} />
 }
