@@ -67,7 +67,7 @@ export default async function CollectionSettingsPage() {
               <p className="text-sm text-walnut/60 mb-4">
                 Share your collection with friends and family. They will be able to view, add records, and log plays.
               </p>
-              <InviteMemberForm collectionId={collection.id} />
+              <InviteMemberForm collectionId={collection.id} collectionName={collection.name} />
             </div>
           </section>
         )}
