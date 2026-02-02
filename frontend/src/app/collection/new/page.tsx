@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, Suspense } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
@@ -32,6 +32,14 @@ type RecognitionState =
   | { status: 'error'; message: string }
 
 export default function NewRecordPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen p-8 flex items-center justify-center"><p className="text-walnut/60">Loading...</p></div>}>
+      <NewRecordContent />
+    </Suspense>
+  )
+}
+
+function NewRecordContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const collectionId = searchParams.get('collectionId')
