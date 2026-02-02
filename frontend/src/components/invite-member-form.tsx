@@ -67,10 +67,8 @@ export function InviteMemberForm({
     }
 
     // Send invite email (non-blocking, don't fail if email fails)
-    const inviteeEmail = email.toLowerCase().trim()
     sendInviteEmail({
-      toEmail: inviteeEmail,
-      inviterName: user.email || 'Someone',
+      toEmail: email.toLowerCase().trim(),
       collectionName,
     }).catch(console.error)
 
