@@ -3,8 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { sendInviteEmail } from '@/app/actions/send-invite-email'
 
-export function InviteMemberForm({ collectionId }: { collectionId: string }) {
+export function InviteMemberForm({
+  collectionId,
+  collectionName,
+}: {
+  collectionId: string
+  collectionName: string
+}) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -39,18 +46,19 @@ export function InviteMemberForm({ collectionId }: { collectionId: string }) {
       // For now, we'll just create the invitation
     }
 
+    const inviteEmail = email.toLowerCase().trim()
+
     // Create invitation
     const { error: inviteError } = await supabase
       .from('invitations')
       .insert({
         collection_id: collectionId,
-        email: email.toLowerCase().trim(),
+        email: inviteEmail,
         invited_by: user.id,
       })
 
-    setLoading(false)
-
     if (inviteError) {
+      setLoading(false)
       if (inviteError.code === '23505') {
         setError('This email has already been invited')
       } else {
@@ -59,6 +67,14 @@ export function InviteMemberForm({ collectionId }: { collectionId: string }) {
       return
     }
 
+    // Send invite email
+    await sendInviteEmail({
+      toEmail: inviteEmail,
+      inviterName: user.email || 'Someone',
+      collectionName,
+    })
+
+    setLoading(false)
     setSuccess(true)
     setEmail('')
     router.refresh()
