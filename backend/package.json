@@ -9,6 +9,7 @@
     "lint": "eslint src/"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.72.1",
     "@supabase/supabase-js": "^2.47.10",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",

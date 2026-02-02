@@ -1,6 +1,7 @@
 import 'dotenv/config'
 import express from 'express'
 import cors from 'cors'
+import recognizeRouter from './routes/recognize'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -11,6 +12,9 @@ app.use(cors({
   credentials: true,
 }))
 app.use(express.json())
+
+// Routes
+app.use('/api/recognize', recognizeRouter)
 
 // Health check endpoint
 app.get('/health', (_req, res) => {
