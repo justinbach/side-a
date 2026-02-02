@@ -3,8 +3,15 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { sendInviteEmail } from '@/app/actions/send-invite-email'
 
-export function InviteMemberForm({ collectionId }: { collectionId: string }) {
+export function InviteMemberForm({
+  collectionId,
+  collectionName,
+}: {
+  collectionId: string
+  collectionName: string
+}) {
   const router = useRouter()
   const [email, setEmail] = useState('')
   const [loading, setLoading] = useState(false)
@@ -58,6 +65,14 @@ export function InviteMemberForm({ collectionId }: { collectionId: string }) {
       }
       return
     }
+
+    // Send invite email (non-blocking, don't fail if email fails)
+    const inviteeEmail = email.toLowerCase().trim()
+    sendInviteEmail({
+      toEmail: inviteeEmail,
+      inviterName: user.email || 'Someone',
+      collectionName,
+    }).catch(console.error)
 
     setSuccess(true)
     setEmail('')
