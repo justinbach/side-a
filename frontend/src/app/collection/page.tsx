@@ -72,7 +72,19 @@ export default async function CollectionPage() {
     .eq('collection_id', collection.id)
     .order('created_at', { ascending: false })
 
+  // Fetch all plays for records in this collection (for filtering/sorting)
+  const recordIds = records?.map(r => r.id) || []
+  let plays = null
+  if (recordIds.length > 0) {
+    const { data } = await supabase
+      .from('plays')
+      .select('record_id, played_at, mood')
+      .in('record_id', recordIds)
+      .order('played_at', { ascending: false })
+    plays = data
+  }
+
   const isOwner = collection.owner_id === user.id
 
-  return <CollectionView collection={collection} records={records} isOwner={isOwner} />
+  return <CollectionView collection={collection} records={records} plays={plays} isOwner={isOwner} />
 }
