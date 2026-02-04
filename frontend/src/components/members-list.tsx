@@ -9,6 +9,7 @@ type Member = {
   role: 'owner' | 'member'
   user_id: string
   created_at: string
+  email: string | null
 }
 
 export function MembersList({
@@ -85,9 +86,11 @@ export function MembersList({
               </div>
               <div>
                 <p className="text-walnut">
-                  {isCurrentUser ? 'You' : `User ${member.user_id.slice(0, 8)}...`}
+                  {isCurrentUser ? 'You' : member.email || 'Unknown user'}
                 </p>
-                <p className="text-sm text-walnut/50 capitalize">{member.role}</p>
+                {isCurrentUser && member.email && (
+                  <p className="text-sm text-walnut/50">{member.email}</p>
+                )}
               </div>
             </div>
 

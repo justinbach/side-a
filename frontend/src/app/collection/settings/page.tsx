@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
+import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { InviteMemberForm } from '@/components/invite-member-form'
 import { MembersList } from '@/components/members-list'
 import { RenameCollectionForm } from '@/components/rename-collection-form'
@@ -47,7 +48,7 @@ export default async function CollectionSettingsPage({
   }
 
   // Get current members
-  const { data: members } = await supabase
+  const { data: membersData } = await supabase
     .from('collection_members')
     .select(`
       id,
@@ -56,6 +57,23 @@ export default async function CollectionSettingsPage({
       created_at
     `)
     .eq('collection_id', collection.id)
+
+  // Fetch user emails using admin client
+  const supabaseAdmin = createAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    { auth: { autoRefreshToken: false, persistSession: false } }
+  )
+
+  const members = await Promise.all(
+    (membersData || []).map(async (member) => {
+      const { data: userData } = await supabaseAdmin.auth.admin.getUserById(member.user_id)
+      return {
+        ...member,
+        email: userData?.user?.email || null,
+      }
+    })
+  )
 
   // Get pending invitations
   const { data: invitations } = await supabase
