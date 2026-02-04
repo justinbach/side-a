@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
@@ -51,8 +52,9 @@ export default function LoginPage() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="w-full max-w-sm">
-        <Link href="/" className="block text-center mb-8">
-          <h1 className="font-serif text-4xl font-bold text-walnut">Side A</h1>
+        <Link href="/" className="flex items-center justify-center gap-3 mb-8">
+          <Image src="/logo.svg" alt="Side A" width={48} height={48} />
+          <span className="font-serif text-4xl font-bold text-walnut">Side A</span>
         </Link>
 
         <form onSubmit={handleLogin} className="space-y-4">

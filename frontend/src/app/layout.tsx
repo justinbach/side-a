@@ -15,6 +15,10 @@ const playfair = Playfair_Display({
 export const metadata: Metadata = {
   title: 'Side A',
   description: 'A vinyl record collection tracker',
+  icons: {
+    icon: '/favicon.svg',
+    apple: '/logo.svg',
+  },
 }
 
 export default function RootLayout({

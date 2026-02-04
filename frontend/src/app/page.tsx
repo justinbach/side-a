@@ -1,12 +1,16 @@
 import Link from 'next/link'
+import Image from 'next/image'
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
       <div className="max-w-md text-center">
-        <h1 className="font-serif text-5xl font-bold text-walnut mb-4">
-          Side A
-        </h1>
+        <div className="flex items-center justify-center gap-4 mb-4">
+          <Image src="/logo.svg" alt="Side A" width={64} height={64} />
+          <h1 className="font-serif text-5xl font-bold text-walnut">
+            Side A
+          </h1>
+        </div>
         <p className="text-lg text-walnut/70 mb-8">
           Track your vinyl collection. Log your plays. Share with friends.
         </p>
