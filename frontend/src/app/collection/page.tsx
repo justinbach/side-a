@@ -12,10 +12,11 @@ export default async function CollectionPage() {
   }
 
   // Accept any pending invitations for this user
+  // Invitations store email as lowercase, so we lowercase the user's email to match
   const { data: pendingInvitations } = await supabase
     .from('invitations')
     .select('id')
-    .eq('email', user.email)
+    .eq('email', user.email?.toLowerCase() || '')
     .is('accepted_at', null)
 
   if (pendingInvitations && pendingInvitations.length > 0) {
