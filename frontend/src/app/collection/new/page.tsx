@@ -6,6 +6,12 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 
+type Track = {
+  position: number
+  title: string
+  length: number | null
+}
+
 type RecognitionResult = {
   success: boolean
   extraction: {
@@ -20,6 +26,7 @@ type RecognitionResult = {
     releaseDate: string | null
     label: string | null
     trackCount: number
+    tracks: Track[]
   } | null
 }
 
@@ -162,6 +169,15 @@ function NewRecordContent() {
       coverImageUrl = publicUrl
     }
 
+    // Build metadata from recognition result if available
+    const metadata: Record<string, unknown> = {}
+    if (recognition.status === 'success' && recognition.result.metadata) {
+      const { releaseDate, label, tracks } = recognition.result.metadata
+      if (releaseDate) metadata.releaseDate = releaseDate
+      if (label) metadata.label = label
+      if (tracks && tracks.length > 0) metadata.tracks = tracks
+    }
+
     // Create the record
     const { error: insertError } = await supabase
       .from('records')
@@ -170,6 +186,7 @@ function NewRecordContent() {
         title,
         artist,
         cover_image_url: coverImageUrl,
+        metadata: Object.keys(metadata).length > 0 ? metadata : {},
       })
 
     if (insertError) {

@@ -5,6 +5,25 @@ import { createClient } from '@/lib/supabase/server'
 import { DeleteRecordButton } from '@/components/delete-record-button'
 import { PlayButton } from '@/components/play-button'
 import { NotesSection } from '@/components/notes-section'
+import { FetchTracksButton } from '@/components/fetch-tracks-button'
+
+type Track = {
+  position: number
+  title: string
+  length: number | null
+}
+
+type RecordMetadata = {
+  releaseDate?: string
+  label?: string
+  tracks?: Track[]
+}
+
+function formatDuration(ms: number): string {
+  const minutes = Math.floor(ms / 60000)
+  const seconds = Math.floor((ms % 60000) / 1000)
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
 
 export default async function RecordDetailPage({
   params,
@@ -102,20 +121,62 @@ export default async function RecordDetailPage({
               <NotesSection recordId={record.id} initialNote={note} />
             </div>
 
-            {/* Metadata */}
-            {record.metadata && Object.keys(record.metadata).length > 0 && (
-              <div className="mb-8">
-                <h2 className="font-serif text-lg text-walnut mb-3">Details</h2>
-                <dl className="grid grid-cols-2 gap-2 text-sm">
-                  {Object.entries(record.metadata as Record<string, string>).map(([key, value]) => (
-                    <div key={key}>
-                      <dt className="text-walnut/50 capitalize">{key}</dt>
-                      <dd className="text-walnut">{value}</dd>
+            {/* Album Details */}
+            {(() => {
+              const metadata = record.metadata as RecordMetadata | null
+              const hasDetails = metadata?.releaseDate || metadata?.label
+              const hasTracks = metadata?.tracks && metadata.tracks.length > 0
+
+              return (
+                <>
+                  {hasDetails && (
+                    <div className="mb-6">
+                      <h2 className="font-serif text-lg text-walnut mb-3">Details</h2>
+                      <dl className="flex flex-wrap gap-x-6 gap-y-2 text-sm">
+                        {metadata?.releaseDate && (
+                          <div>
+                            <dt className="text-walnut/50">Released</dt>
+                            <dd className="text-walnut">{metadata.releaseDate.split('-')[0]}</dd>
+                          </div>
+                        )}
+                        {metadata?.label && (
+                          <div>
+                            <dt className="text-walnut/50">Label</dt>
+                            <dd className="text-walnut">{metadata.label}</dd>
+                          </div>
+                        )}
+                      </dl>
                     </div>
-                  ))}
-                </dl>
-              </div>
-            )}
+                  )}
+
+                  {/* Track List */}
+                  {hasTracks ? (
+                    <div className="mb-8">
+                      <h2 className="font-serif text-lg text-walnut mb-3">Track List</h2>
+                      <ol className="space-y-1">
+                        {metadata!.tracks!.map((track) => (
+                          <li key={track.position} className="flex items-center text-sm py-1.5 border-b border-walnut/5 last:border-0">
+                            <span className="w-8 text-walnut/40 tabular-nums">{track.position}.</span>
+                            <span className="flex-1 text-walnut">{track.title}</span>
+                            {track.length && (
+                              <span className="text-walnut/40 tabular-nums">{formatDuration(track.length)}</span>
+                            )}
+                          </li>
+                        ))}
+                      </ol>
+                    </div>
+                  ) : (
+                    <div className="mb-8">
+                      <FetchTracksButton
+                        recordId={record.id}
+                        title={record.title}
+                        artist={record.artist}
+                      />
+                    </div>
+                  )}
+                </>
+              )
+            })()}
 
             {/* Actions */}
             <div className="pt-6 border-t border-walnut/10">
