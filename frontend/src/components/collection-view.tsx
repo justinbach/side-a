@@ -3,6 +3,7 @@
 import { useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { RecordGrid } from './record-grid'
 
@@ -137,7 +138,10 @@ export function CollectionView({
   return (
     <main className="min-h-screen p-8">
       <header className="max-w-5xl mx-auto flex justify-between items-center mb-12">
-        <h1 className="font-serif text-3xl font-bold text-walnut">Side A</h1>
+        <Link href="/collection" className="flex items-center gap-3">
+          <Image src="/logo.svg" alt="Side A" width={40} height={40} />
+          <span className="font-serif text-3xl font-bold text-walnut">Side A</span>
+        </Link>
         <button
           onClick={handleSignOut}
           className="text-sm text-walnut/60 hover:text-walnut transition-colors"
