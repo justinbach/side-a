@@ -3,7 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { CollectionView } from '@/components/collection-view'
 
-export default async function CollectionPage() {
+export default async function CollectionPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>
+}) {
+  const { c: selectedCollectionId } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -25,16 +30,14 @@ export default async function CollectionPage() {
     }
   }
 
-  // Get user's collections (owned or member of)
+  // Get all collections user has access to (owned or member of)
   let { data: collections } = await supabase
     .from('collections')
     .select('id, name, owner_id')
-    .limit(1)
+    .order('created_at', { ascending: true })
 
-  let collection = collections?.[0] ?? null
-
-  // Create default collection if user doesn't have one
-  if (!collection) {
+  // Create default collection if user doesn't have any
+  if (!collections || collections.length === 0) {
     const supabaseAdmin = createAdminClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL!,
       process.env.SUPABASE_SERVICE_ROLE_KEY!,
@@ -63,8 +66,13 @@ export default async function CollectionPage() {
       )
     }
 
-    collection = newCollection
+    collections = [newCollection]
   }
+
+  // Find selected collection or default to first one
+  let collection = selectedCollectionId
+    ? collections.find(c => c.id === selectedCollectionId) || collections[0]
+    : collections[0]
 
   // Fetch records
   const { data: records } = await supabase
@@ -87,5 +95,13 @@ export default async function CollectionPage() {
 
   const isOwner = collection.owner_id === user.id
 
-  return <CollectionView collection={collection} records={records} plays={plays} isOwner={isOwner} />
+  return (
+    <CollectionView
+      collection={collection}
+      allCollections={collections}
+      records={records}
+      plays={plays}
+      isOwner={isOwner}
+    />
+  )
 }

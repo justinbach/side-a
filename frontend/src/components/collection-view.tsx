@@ -39,11 +39,13 @@ type SortOption = 'date_desc' | 'date_asc' | 'title' | 'artist' | 'recently_play
 
 export function CollectionView({
   collection,
+  allCollections,
   records,
   plays,
   isOwner,
 }: {
   collection: Collection
+  allCollections: Collection[]
   records: Record[] | null
   plays: Play[] | null
   isOwner: boolean
@@ -147,10 +149,25 @@ export function CollectionView({
       <div className="max-w-5xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <div className="flex items-center gap-4">
-            <h2 className="font-serif text-2xl text-walnut">{collection.name}</h2>
+            {allCollections.length > 1 ? (
+              <select
+                value={collection.id}
+                onChange={(e) => router.push(`/collection?c=${e.target.value}`)}
+                className="font-serif text-2xl text-walnut bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer pr-8 -mr-4"
+                style={{ appearance: 'none', backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%234A3728' stroke-width='2'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' d='M19 9l-7 7-7-7'/%3E%3C/svg%3E")`, backgroundRepeat: 'no-repeat', backgroundPosition: 'right 0 center', backgroundSize: '1.25rem' }}
+              >
+                {allCollections.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <h2 className="font-serif text-2xl text-walnut">{collection.name}</h2>
+            )}
             {isOwner && (
               <Link
-                href="/collection/settings"
+                href={`/collection/settings?c=${collection.id}`}
                 className="text-walnut/50 hover:text-walnut transition-colors"
                 title="Collection Settings"
               >
