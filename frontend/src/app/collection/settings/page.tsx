@@ -4,7 +4,12 @@ import { createClient } from '@/lib/supabase/server'
 import { InviteMemberForm } from '@/components/invite-member-form'
 import { MembersList } from '@/components/members-list'
 
-export default async function CollectionSettingsPage() {
+export default async function CollectionSettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ c?: string }>
+}) {
+  const { c: collectionId } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -12,15 +17,32 @@ export default async function CollectionSettingsPage() {
     redirect('/login')
   }
 
-  // Get user's collection where they are the owner
-  const { data: collection } = await supabase
-    .from('collections')
-    .select('id, name, owner_id')
-    .eq('owner_id', user.id)
-    .single()
+  // Get the specified collection or fall back to user's owned collection
+  let collection
+  if (collectionId) {
+    const { data } = await supabase
+      .from('collections')
+      .select('id, name, owner_id')
+      .eq('id', collectionId)
+      .single()
+    collection = data
+  } else {
+    const { data } = await supabase
+      .from('collections')
+      .select('id, name, owner_id')
+      .eq('owner_id', user.id)
+      .single()
+    collection = data
+  }
 
   if (!collection) {
     redirect('/collection')
+  }
+
+  // Only owners can access settings
+  const isOwner = collection.owner_id === user.id
+  if (!isOwner) {
+    redirect(`/collection?c=${collection.id}`)
   }
 
   // Get current members
@@ -41,13 +63,11 @@ export default async function CollectionSettingsPage() {
     .eq('collection_id', collection.id)
     .is('accepted_at', null)
 
-  const isOwner = collection.owner_id === user.id
-
   return (
     <main className="min-h-screen p-8">
       <div className="max-w-2xl mx-auto">
         <Link
-          href="/collection"
+          href={`/collection?c=${collection.id}`}
           className="inline-flex items-center text-walnut/60 hover:text-walnut mb-8 transition-colors"
         >
           <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
