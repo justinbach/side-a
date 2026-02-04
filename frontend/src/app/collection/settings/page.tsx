@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { InviteMemberForm } from '@/components/invite-member-form'
 import { MembersList } from '@/components/members-list'
+import { RenameCollectionForm } from '@/components/rename-collection-form'
 
 export default async function CollectionSettingsPage({
   searchParams,
@@ -76,8 +77,15 @@ export default async function CollectionSettingsPage({
           Back to Collection
         </Link>
 
-        <h1 className="font-serif text-3xl font-bold text-walnut mb-2">Collection Settings</h1>
-        <p className="text-walnut/60 mb-8">{collection.name}</p>
+        <h1 className="font-serif text-3xl font-bold text-walnut mb-8">Collection Settings</h1>
+
+        {/* Collection Name */}
+        <section className="mb-10">
+          <h2 className="font-serif text-xl text-walnut mb-4">Collection Name</h2>
+          <div className="bg-warm-white rounded-xl border border-walnut/10 p-6">
+            <RenameCollectionForm collectionId={collection.id} currentName={collection.name} />
+          </div>
+        </section>
 
         {/* Invite Section */}
         {isOwner && (
