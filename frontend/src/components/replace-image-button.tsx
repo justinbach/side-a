@@ -144,16 +144,16 @@ export function ReplaceImageButton({
 
         <div className="flex gap-2">
           <button
+            onClick={handleCancel}
+            className="flex-1 py-2 px-3 border border-walnut/20 text-walnut rounded-lg text-sm font-medium hover:bg-tan/50 transition-colors"
+          >
+            Keep Current
+          </button>
+          <button
             onClick={handleConfirm}
             className="flex-1 py-2 px-3 bg-sage text-warm-white rounded-lg text-sm font-medium hover:bg-sage/90 transition-colors"
           >
             Use New Image
-          </button>
-          <button
-            onClick={handleCancel}
-            className="flex-1 py-2 px-3 border border-walnut/20 text-walnut rounded-lg text-sm font-medium hover:bg-tan/50 transition-colors"
-          >
-            Cancel
           </button>
         </div>
       </div>
