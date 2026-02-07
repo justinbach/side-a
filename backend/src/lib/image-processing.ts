@@ -30,8 +30,14 @@ export async function processAlbumImage(
   }
 
   try {
-    // Get image metadata
-    const metadata = await sharp(imageBuffer).metadata()
+    // IMPORTANT: Normalize EXIF orientation first
+    // Phone cameras store rotation in EXIF metadata rather than rotating pixels.
+    // Sharp's .rotate() without arguments applies EXIF rotation and removes the tag.
+    // This ensures we work with the same orientation that Claude Vision sees.
+    const normalizedBuffer = await sharp(imageBuffer).rotate().toBuffer()
+
+    // Get image metadata from the normalized image
+    const metadata = await sharp(normalizedBuffer).metadata()
     const width = metadata.width || 0
     const height = metadata.height || 0
 
@@ -69,12 +75,14 @@ export async function processAlbumImage(
       }
     }
 
-    // Build the Sharp pipeline
-    let pipeline = sharp(imageBuffer)
+    // Build the Sharp pipeline from the EXIF-normalized image
+    let pipeline = sharp(normalizedBuffer)
 
-    // Apply rotation if needed (Sharp rotates counter-clockwise, so negate)
+    // Apply rotation if needed to straighten a tilted album
+    // (This is separate from EXIF - this corrects for photos taken at an angle)
     const rotation = analysis.rotationDegrees
     if (Math.abs(rotation) > 0.5) {
+      // Use rotate() with angle - since EXIF is already normalized, this only applies our angle
       pipeline = pipeline.rotate(-rotation, { background: { r: 255, g: 255, b: 255, alpha: 1 } })
     }
 
