@@ -245,22 +245,49 @@ function NewRecordContent() {
             </div>
           ) : recognition.status === 'success' ? (
             <div className="py-4">
-              <div className="flex items-center gap-2 text-sage mb-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                </svg>
-                <span className="font-medium">Album recognized!</span>
-              </div>
               {recognition.result.metadata ? (
-                <p className="text-sm text-walnut/60">
-                  Found: {recognition.result.metadata.title} by {recognition.result.metadata.artist}
-                  {recognition.result.metadata.releaseDate && ` (${recognition.result.metadata.releaseDate.split('-')[0]})`}
-                </p>
+                // Full success - found in MusicBrainz
+                <>
+                  <div className="flex items-center gap-2 text-sage mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span className="font-medium">Album recognized!</span>
+                  </div>
+                  <p className="text-sm text-walnut/60">
+                    Found: {recognition.result.metadata.title} by {recognition.result.metadata.artist}
+                    {recognition.result.metadata.releaseDate && ` (${recognition.result.metadata.releaseDate.split('-')[0]})`}
+                  </p>
+                </>
+              ) : recognition.result.extraction.title || recognition.result.extraction.artist ? (
+                // Partial success - Claude detected something but not found in MusicBrainz
+                <>
+                  <div className="flex items-center gap-2 text-mustard mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="font-medium">Partial match</span>
+                  </div>
+                  <p className="text-sm text-walnut/60">
+                    Detected: {recognition.result.extraction.title || 'Unknown title'} by {recognition.result.extraction.artist || 'Unknown artist'}
+                  </p>
+                  <p className="text-sm text-walnut/40 mt-1">
+                    Could not find full album details. Please verify and complete the info below.
+                  </p>
+                </>
               ) : (
-                <p className="text-sm text-walnut/60">
-                  Detected: {recognition.result.extraction.title || 'Unknown'} by {recognition.result.extraction.artist || 'Unknown'}
-                  <span className="text-walnut/40"> (confidence: {recognition.result.extraction.confidence})</span>
-                </p>
+                // No recognition - couldn't identify anything
+                <>
+                  <div className="flex items-center gap-2 text-red-600 mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                    <span className="font-medium">Could not recognize album</span>
+                  </div>
+                  <p className="text-sm text-walnut/60">
+                    Unable to identify the album from this photo. Try a clearer image or enter the details manually below.
+                  </p>
+                </>
               )}
               <button
                 type="button"
