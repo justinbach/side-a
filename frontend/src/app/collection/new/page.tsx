@@ -12,6 +12,16 @@ type Track = {
   length: number | null
 }
 
+type PreprocessingResult = {
+  applied: boolean
+  processedImageDataUrl: string | null
+  analysis: {
+    albumDetected: boolean
+    rotationDegrees: number
+    confidence: 'high' | 'medium' | 'low'
+  }
+}
+
 type RecognitionResult = {
   success: boolean
   extraction: {
@@ -28,6 +38,7 @@ type RecognitionResult = {
     trackCount: number
     tracks: Track[]
   } | null
+  preprocessing?: PreprocessingResult
 }
 
 type RecognitionState =
@@ -57,6 +68,9 @@ function NewRecordContent() {
   const [artist, setArtist] = useState('')
   const [coverFile, setCoverFile] = useState<File | null>(null)
   const [coverPreview, setCoverPreview] = useState<string | null>(null)
+  const [originalImageDataUrl, setOriginalImageDataUrl] = useState<string | null>(null)
+  const [processedImageDataUrl, setProcessedImageDataUrl] = useState<string | null>(null)
+  const [useProcessedImage, setUseProcessedImage] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [recognition, setRecognition] = useState<RecognitionState>({ status: 'idle' })
@@ -78,11 +92,16 @@ function NewRecordContent() {
     if (!file) return
 
     setRecognition({ status: 'uploading' })
+    setProcessedImageDataUrl(null)
+    setOriginalImageDataUrl(null)
+    setUseProcessedImage(true)
 
     // Show preview of the photo being analyzed
     const reader = new FileReader()
     reader.onloadend = () => {
-      setCoverPreview(reader.result as string)
+      const dataUrl = reader.result as string
+      setCoverPreview(dataUrl)
+      setOriginalImageDataUrl(dataUrl)
     }
     reader.readAsDataURL(file)
     setCoverFile(file)
@@ -111,13 +130,22 @@ function NewRecordContent() {
       const result: RecognitionResult = await response.json()
       setRecognition({ status: 'success', result })
 
+      // Handle preprocessed image
+      if (result.preprocessing?.applied && result.preprocessing.processedImageDataUrl) {
+        setProcessedImageDataUrl(result.preprocessing.processedImageDataUrl)
+        setCoverPreview(result.preprocessing.processedImageDataUrl)
+        setCoverFile(null) // Will use the processed data URL
+      }
+
       // Populate form with results
       if (result.metadata) {
         setTitle(result.metadata.title)
         setArtist(result.metadata.artist)
         if (result.metadata.coverArtUrl) {
+          // MusicBrainz cover takes priority over processed image
           setCoverPreview(result.metadata.coverArtUrl)
-          setCoverFile(null) // Use the remote URL instead
+          setProcessedImageDataUrl(null)
+          setCoverFile(null)
         }
       } else if (result.extraction.title || result.extraction.artist) {
         setTitle(result.extraction.title || '')
@@ -129,6 +157,19 @@ function NewRecordContent() {
         message: err instanceof Error ? err.message : 'Recognition failed'
       })
     }
+  }
+
+  // Helper to convert data URL to Blob
+  const dataUrlToBlob = (dataUrl: string): Blob => {
+    const [header, base64] = dataUrl.split(',')
+    const mimeMatch = header.match(/:(.*?);/)
+    const mime = mimeMatch ? mimeMatch[1] : 'image/jpeg'
+    const binary = atob(base64)
+    const array = new Uint8Array(binary.length)
+    for (let i = 0; i < binary.length; i++) {
+      array[i] = binary.charCodeAt(i)
+    }
+    return new Blob([array], { type: mime })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -145,7 +186,12 @@ function NewRecordContent() {
 
     let coverImageUrl: string | null = coverPreview?.startsWith('http') ? coverPreview : null
 
-    // Upload cover image if it's a local file
+    // Determine which image to upload
+    const imageToUpload = useProcessedImage && processedImageDataUrl
+      ? processedImageDataUrl
+      : originalImageDataUrl
+
+    // Upload cover image if it's a local file or processed image
     if (coverFile) {
       const fileExt = coverFile.name.split('.').pop()
       const fileName = `${crypto.randomUUID()}.${fileExt}`
@@ -155,6 +201,28 @@ function NewRecordContent() {
       const { error: uploadError } = await supabase.storage
         .from('covers')
         .upload(filePath, coverFile)
+
+      if (uploadError) {
+        setError(`Failed to upload image: ${uploadError.message}`)
+        setLoading(false)
+        return
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('covers')
+        .getPublicUrl(filePath)
+
+      coverImageUrl = publicUrl
+    } else if (imageToUpload && imageToUpload.startsWith('data:')) {
+      // Upload processed or original image from data URL
+      const blob = dataUrlToBlob(imageToUpload)
+      const fileName = `${crypto.randomUUID()}.jpg`
+      const { data: { user } } = await supabase.auth.getUser()
+      const filePath = `${user?.id}/${fileName}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('covers')
+        .upload(filePath, blob)
 
       if (uploadError) {
         setError(`Failed to upload image: ${uploadError.message}`)
@@ -289,10 +357,42 @@ function NewRecordContent() {
                   </p>
                 </>
               )}
+              {/* Preprocessing info */}
+              {recognition.result.preprocessing?.applied && processedImageDataUrl && !recognition.result.metadata?.coverArtUrl && (
+                <div className="mt-3 p-3 bg-sage/10 rounded-lg border border-sage/20">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2 text-sm text-sage">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                      <span>
+                        Image enhanced
+                        {recognition.result.preprocessing.analysis.rotationDegrees !== 0 && (
+                          <span className="text-walnut/50">
+                            {' '}(rotated {Math.abs(recognition.result.preprocessing.analysis.rotationDegrees).toFixed(0)}°)
+                          </span>
+                        )}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setUseProcessedImage(!useProcessedImage)
+                        setCoverPreview(useProcessedImage ? originalImageDataUrl : processedImageDataUrl)
+                      }}
+                      className="text-sm text-burnt-orange hover:underline"
+                    >
+                      {useProcessedImage ? 'Use original' : 'Use enhanced'}
+                    </button>
+                  </div>
+                </div>
+              )}
               <button
                 type="button"
                 onClick={() => {
                   setRecognition({ status: 'idle' })
+                  setProcessedImageDataUrl(null)
+                  setOriginalImageDataUrl(null)
                   recognizeInputRef.current?.click()
                 }}
                 className="mt-3 text-sm text-burnt-orange hover:underline"
