@@ -6,6 +6,7 @@ import { DeleteRecordButton } from '@/components/delete-record-button'
 import { PlayButton } from '@/components/play-button'
 import { NotesSection } from '@/components/notes-section'
 import { FetchTracksButton } from '@/components/fetch-tracks-button'
+import { ClearTracksButton } from '@/components/clear-tracks-button'
 import { ReprocessImageButton } from '@/components/reprocess-image-button'
 import { ReplaceImageButton } from '@/components/replace-image-button'
 
@@ -164,7 +165,10 @@ export default async function RecordDetailPage({
                   {/* Track List */}
                   {hasTracks ? (
                     <div className="mb-8">
-                      <h2 className="font-serif text-lg text-walnut mb-3">Track List</h2>
+                      <div className="flex items-center justify-between mb-3">
+                        <h2 className="font-serif text-lg text-walnut">Track List</h2>
+                        <ClearTracksButton recordId={record.id} />
+                      </div>
                       <ol className="space-y-1">
                         {metadata!.tracks!.map((track) => (
                           <li key={track.position} className="flex items-center text-sm py-1.5 border-b border-walnut/5 last:border-0">
