@@ -10,6 +10,25 @@ export type AlbumExtraction = {
   confidence: 'high' | 'medium' | 'low'
 }
 
+export type Point = {
+  x: number
+  y: number
+}
+
+export type BoundingBox = {
+  topLeft: Point
+  topRight: Point
+  bottomRight: Point
+  bottomLeft: Point
+}
+
+export type AlbumBoundsAnalysis = {
+  albumDetected: boolean
+  boundingBox: BoundingBox | null
+  rotationDegrees: number
+  confidence: 'high' | 'medium' | 'low'
+}
+
 export async function extractAlbumInfo(imageBase64: string, mimeType: string): Promise<AlbumExtraction> {
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',
@@ -63,5 +82,69 @@ Rules:
     }
   } catch {
     return { title: null, artist: null, confidence: 'low' }
+  }
+}
+
+export async function analyzeAlbumBounds(imageBase64: string, mimeType: string): Promise<AlbumBoundsAnalysis> {
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 512,
+    messages: [
+      {
+        role: 'user',
+        content: [
+          {
+            type: 'image',
+            source: {
+              type: 'base64',
+              media_type: mimeType as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp',
+              data: imageBase64,
+            },
+          },
+          {
+            type: 'text',
+            text: `You are analyzing a photo that may contain a vinyl record album cover. Identify the album cover's boundaries and orientation.
+
+Respond ONLY with a JSON object in this exact format:
+{
+  "albumDetected": true,
+  "boundingBox": {
+    "topLeft": { "x": 0.1, "y": 0.1 },
+    "topRight": { "x": 0.9, "y": 0.1 },
+    "bottomRight": { "x": 0.9, "y": 0.9 },
+    "bottomLeft": { "x": 0.1, "y": 0.9 }
+  },
+  "rotationDegrees": 0,
+  "confidence": "high"
+}
+
+Instructions:
+- All coordinates are normalized 0.0 to 1.0 relative to image dimensions (0,0 is top-left, 1,1 is bottom-right)
+- The corners should trace the album cover clockwise starting from top-left AS IT APPEARS in the image
+- rotationDegrees is the clockwise rotation needed to make the album upright (-45 to 45 range)
+- If no album cover is visible, set albumDetected to false and boundingBox to null
+- confidence: "high" if boundaries are clear, "medium" if partially obscured, "low" if guessing
+- Do not include any other text, just the JSON object`,
+          },
+        ],
+      },
+    ],
+  })
+
+  const textContent = response.content.find((c) => c.type === 'text')
+  if (!textContent || textContent.type !== 'text') {
+    return { albumDetected: false, boundingBox: null, rotationDegrees: 0, confidence: 'low' }
+  }
+
+  try {
+    const parsed = JSON.parse(textContent.text)
+    return {
+      albumDetected: parsed.albumDetected ?? false,
+      boundingBox: parsed.boundingBox ?? null,
+      rotationDegrees: parsed.rotationDegrees ?? 0,
+      confidence: parsed.confidence ?? 'low',
+    }
+  } catch {
+    return { albumDetected: false, boundingBox: null, rotationDegrees: 0, confidence: 'low' }
   }
 }
