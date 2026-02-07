@@ -29,7 +29,8 @@ export function ClearTracksButton({
       const currentMetadata = (record?.metadata || {}) as Record<string, unknown>
 
       // Remove tracks from metadata
-      const { tracks: _tracks, ...metadataWithoutTracks } = currentMetadata
+      const metadataWithoutTracks = { ...currentMetadata }
+      delete metadataWithoutTracks.tracks
 
       const { error: updateError } = await supabase
         .from('records')
