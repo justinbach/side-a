@@ -195,16 +195,16 @@ export function ReprocessImageButton({
 
         <div className="flex gap-2">
           <button
-            onClick={handleAccept}
-            className="flex-1 py-2 px-3 bg-sage text-warm-white rounded-lg text-sm font-medium hover:bg-sage/90 transition-colors"
-          >
-            Use Enhanced
-          </button>
-          <button
             onClick={handleReject}
             className="flex-1 py-2 px-3 border border-walnut/20 text-walnut rounded-lg text-sm font-medium hover:bg-tan/50 transition-colors"
           >
             Keep Original
+          </button>
+          <button
+            onClick={handleAccept}
+            className="flex-1 py-2 px-3 bg-sage text-warm-white rounded-lg text-sm font-medium hover:bg-sage/90 transition-colors"
+          >
+            Use Enhanced
           </button>
         </div>
       </div>

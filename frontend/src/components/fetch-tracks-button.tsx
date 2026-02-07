@@ -32,6 +32,9 @@ export function FetchTracksButton({
   const router = useRouter()
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [searchTitle, setSearchTitle] = useState(title)
+  const [searchArtist, setSearchArtist] = useState(artist)
 
   const handleFetch = async () => {
     setLoading(true)
@@ -42,7 +45,7 @@ export function FetchTracksButton({
       const response = await fetch(`${backendUrl}/api/lookup`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, artist }),
+        body: JSON.stringify({ title: searchTitle, artist: searchArtist }),
       })
 
       const data: LookupResponse = await response.json()
@@ -85,13 +88,64 @@ export function FetchTracksButton({
       <p className="text-sm text-walnut/60 mb-3">
         Track list not available for this record.
       </p>
-      <button
-        onClick={handleFetch}
-        disabled={loading}
-        className="px-4 py-2 bg-burnt-orange text-warm-white rounded-lg text-sm font-medium hover:bg-burnt-orange/90 transition-colors disabled:opacity-50"
-      >
-        {loading ? 'Looking up tracks...' : 'Fetch Track List'}
-      </button>
+
+      {isEditing ? (
+        <div className="space-y-3 mb-3">
+          <div>
+            <label className="block text-xs text-walnut/60 mb-1">Album Title</label>
+            <input
+              type="text"
+              value={searchTitle}
+              onChange={(e) => setSearchTitle(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-walnut/20 bg-warm-white focus:outline-none focus:ring-2 focus:ring-burnt-orange/50"
+              placeholder="Album title to search"
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-walnut/60 mb-1">Artist</label>
+            <input
+              type="text"
+              value={searchArtist}
+              onChange={(e) => setSearchArtist(e.target.value)}
+              className="w-full px-3 py-2 text-sm rounded-lg border border-walnut/20 bg-warm-white focus:outline-none focus:ring-2 focus:ring-burnt-orange/50"
+              placeholder="Artist to search"
+            />
+          </div>
+        </div>
+      ) : null}
+
+      <div className="flex items-center gap-3">
+        <button
+          onClick={handleFetch}
+          disabled={loading}
+          className="px-4 py-2 bg-burnt-orange text-warm-white rounded-lg text-sm font-medium hover:bg-burnt-orange/90 transition-colors disabled:opacity-50"
+        >
+          {loading ? 'Looking up tracks...' : 'Fetch Track List'}
+        </button>
+
+        {!isEditing && (
+          <button
+            onClick={() => setIsEditing(true)}
+            className="text-sm text-walnut/60 hover:text-walnut transition-colors"
+          >
+            Edit search
+          </button>
+        )}
+
+        {isEditing && (
+          <button
+            onClick={() => {
+              setIsEditing(false)
+              setSearchTitle(title)
+              setSearchArtist(artist)
+            }}
+            className="text-sm text-walnut/60 hover:text-walnut transition-colors"
+          >
+            Reset
+          </button>
+        )}
+      </div>
+
       {error && (
         <p className="mt-2 text-sm text-red-600">{error}</p>
       )}
