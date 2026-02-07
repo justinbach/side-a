@@ -30,6 +30,7 @@ export function PlayButton({
   const [plays, setPlays] = useState<Play[]>(initialPlays)
   const [showMoodPicker, setShowMoodPicker] = useState(false)
   const [currentPlayId, setCurrentPlayId] = useState<string | null>(null)
+  const [editingPlayId, setEditingPlayId] = useState<string | null>(null)
   const [isLogging, setIsLogging] = useState(false)
 
   const handlePlay = async () => {
@@ -89,6 +90,28 @@ export function PlayButton({
   const handleSkipMood = () => {
     setShowMoodPicker(false)
     setCurrentPlayId(null)
+  }
+
+  const handleEditMood = (playId: string) => {
+    setEditingPlayId(editingPlayId === playId ? null : playId)
+  }
+
+  const handleUpdateMood = async (playId: string, mood: Mood | null) => {
+    const supabase = createClient()
+    const { error } = await supabase
+      .from('plays')
+      .update({ mood })
+      .eq('id', playId)
+
+    if (error) {
+      console.error('Failed to update mood:', error)
+      return
+    }
+
+    setPlays(plays.map(p =>
+      p.id === playId ? { ...p, mood } : p
+    ))
+    setEditingPlayId(null)
   }
 
   // Auto-hide mood picker after 10 seconds
@@ -189,20 +212,54 @@ export function PlayButton({
       {plays.length > 0 && (
         <div className="mt-8">
           <h3 className="font-serif text-lg text-walnut mb-4">Play History</h3>
-          <div className="space-y-2">
+          <div className="space-y-1">
             {plays.slice(0, 10).map((play) => (
-              <div
-                key={play.id}
-                className="flex items-center justify-between py-2 border-b border-walnut/5 last:border-0"
-              >
-                <span className="text-sm text-walnut/70">
-                  {formatPlayTime(play.played_at)}
-                </span>
-                {play.mood && (
-                  <span className="text-sm text-walnut/50 flex items-center gap-1">
-                    <span>{getMoodEmoji(play.mood)}</span>
-                    <span>{play.mood}</span>
+              <div key={play.id}>
+                <button
+                  onClick={() => handleEditMood(play.id)}
+                  className="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-tan/30 transition-colors text-left"
+                >
+                  <span className="text-sm text-walnut/70">
+                    {formatPlayTime(play.played_at)}
                   </span>
+                  {play.mood ? (
+                    <span className="text-sm text-walnut/50 flex items-center gap-1">
+                      <span>{getMoodEmoji(play.mood)}</span>
+                      <span>{play.mood}</span>
+                    </span>
+                  ) : (
+                    <span className="text-sm text-walnut/30 italic">
+                      + Add mood
+                    </span>
+                  )}
+                </button>
+                {editingPlayId === play.id && (
+                  <div className="py-3 px-2 -mx-2 bg-tan/20 rounded-lg mb-1">
+                    <div className="flex flex-wrap gap-2">
+                      {MOODS.map((mood) => (
+                        <button
+                          key={mood.value}
+                          onClick={() => handleUpdateMood(play.id, mood.value)}
+                          className={`px-3 py-1.5 rounded-full text-sm transition-colors flex items-center gap-1.5 ${
+                            play.mood === mood.value
+                              ? 'bg-burnt-orange text-warm-white'
+                              : 'bg-warm-white border border-walnut/10 text-walnut hover:bg-burnt-orange/10'
+                          }`}
+                        >
+                          <span>{mood.emoji}</span>
+                          <span>{mood.label}</span>
+                        </button>
+                      ))}
+                    </div>
+                    {play.mood && (
+                      <button
+                        onClick={() => handleUpdateMood(play.id, null)}
+                        className="mt-2 text-sm text-walnut/50 hover:text-walnut transition-colors"
+                      >
+                        Clear mood
+                      </button>
+                    )}
+                  </div>
                 )}
               </div>
             ))}
