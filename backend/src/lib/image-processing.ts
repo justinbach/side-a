@@ -149,7 +149,7 @@ export async function processAlbumImage(
 /**
  * Convert normalized (0-1) bounding box coordinates to pixel coordinates.
  */
-function normalizedToPixels(
+export function normalizedToPixels(
   box: BoundingBox,
   width: number,
   height: number
