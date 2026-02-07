@@ -186,21 +186,23 @@ function NewRecordContent() {
 
     let coverImageUrl: string | null = coverPreview?.startsWith('http') ? coverPreview : null
 
-    // Determine which image to upload
+    // Determine which image to upload - prioritize processed image if available
     const imageToUpload = useProcessedImage && processedImageDataUrl
       ? processedImageDataUrl
       : originalImageDataUrl
 
-    // Upload cover image if it's a local file or processed image
-    if (coverFile) {
-      const fileExt = coverFile.name.split('.').pop()
-      const fileName = `${crypto.randomUUID()}.${fileExt}`
+    // Upload cover image - check for data URL first (processed/original from recognition)
+    // then fall back to file upload (manual selection)
+    if (imageToUpload && imageToUpload.startsWith('data:')) {
+      // Upload processed or original image from data URL
+      const blob = dataUrlToBlob(imageToUpload)
+      const fileName = `${crypto.randomUUID()}.jpg`
       const { data: { user } } = await supabase.auth.getUser()
       const filePath = `${user?.id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('covers')
-        .upload(filePath, coverFile)
+        .upload(filePath, blob)
 
       if (uploadError) {
         setError(`Failed to upload image: ${uploadError.message}`)
@@ -213,16 +215,16 @@ function NewRecordContent() {
         .getPublicUrl(filePath)
 
       coverImageUrl = publicUrl
-    } else if (imageToUpload && imageToUpload.startsWith('data:')) {
-      // Upload processed or original image from data URL
-      const blob = dataUrlToBlob(imageToUpload)
-      const fileName = `${crypto.randomUUID()}.jpg`
+    } else if (coverFile) {
+      // Fallback to original file (manual upload without recognition)
+      const fileExt = coverFile.name.split('.').pop()
+      const fileName = `${crypto.randomUUID()}.${fileExt}`
       const { data: { user } } = await supabase.auth.getUser()
       const filePath = `${user?.id}/${fileName}`
 
       const { error: uploadError } = await supabase.storage
         .from('covers')
-        .upload(filePath, blob)
+        .upload(filePath, coverFile)
 
       if (uploadError) {
         setError(`Failed to upload image: ${uploadError.message}`)
