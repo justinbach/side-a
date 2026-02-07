@@ -6,6 +6,7 @@ import { DeleteRecordButton } from '@/components/delete-record-button'
 import { PlayButton } from '@/components/play-button'
 import { NotesSection } from '@/components/notes-section'
 import { FetchTracksButton } from '@/components/fetch-tracks-button'
+import { ReprocessImageButton } from '@/components/reprocess-image-button'
 
 type Track = {
   position: number
@@ -102,6 +103,12 @@ export default async function RecordDetailPage({
                 </div>
               )}
             </div>
+            {record.cover_image_url && (
+              <ReprocessImageButton
+                recordId={record.id}
+                currentImageUrl={record.cover_image_url}
+              />
+            )}
           </div>
 
           {/* Record Info */}

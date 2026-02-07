@@ -3,6 +3,7 @@ import express from 'express'
 import cors from 'cors'
 import recognizeRouter from './routes/recognize'
 import lookupRouter from './routes/lookup'
+import preprocessRouter from './routes/preprocess'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -17,6 +18,7 @@ app.use(express.json())
 // Routes
 app.use('/api/recognize', recognizeRouter)
 app.use('/api/lookup', lookupRouter)
+app.use('/api/preprocess', preprocessRouter)
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

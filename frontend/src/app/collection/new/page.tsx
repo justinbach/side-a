@@ -49,6 +49,22 @@ type RecognitionState =
   | { status: 'success'; result: RecognitionResult }
   | { status: 'error'; message: string }
 
+type MusicBrainzMetadata = {
+  title: string
+  artist: string
+  coverArtUrl: string | null
+  releaseDate: string | null
+  label: string | null
+  trackCount: number
+  tracks: Track[]
+}
+
+type MusicBrainzApproval =
+  | { status: 'none' }
+  | { status: 'pending' }
+  | { status: 'accepted'; useMusicBrainzCover: boolean }
+  | { status: 'rejected' }
+
 export default function NewRecordPage() {
   return (
     <Suspense fallback={<div className="min-h-screen p-8 flex items-center justify-center"><p className="text-walnut/60">Loading...</p></div>}>
@@ -74,6 +90,8 @@ function NewRecordContent() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [recognition, setRecognition] = useState<RecognitionState>({ status: 'idle' })
+  const [musicBrainzMatch, setMusicBrainzMatch] = useState<MusicBrainzMetadata | null>(null)
+  const [musicBrainzApproval, setMusicBrainzApproval] = useState<MusicBrainzApproval>({ status: 'none' })
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -95,6 +113,8 @@ function NewRecordContent() {
     setProcessedImageDataUrl(null)
     setOriginalImageDataUrl(null)
     setUseProcessedImage(true)
+    setMusicBrainzMatch(null)
+    setMusicBrainzApproval({ status: 'none' })
 
     // Show preview of the photo being analyzed
     const reader = new FileReader()
@@ -130,26 +150,23 @@ function NewRecordContent() {
       const result: RecognitionResult = await response.json()
       setRecognition({ status: 'success', result })
 
-      // Handle preprocessed image
+      // Handle preprocessed image - always use user's photo as default
       if (result.preprocessing?.applied && result.preprocessing.processedImageDataUrl) {
         setProcessedImageDataUrl(result.preprocessing.processedImageDataUrl)
         setCoverPreview(result.preprocessing.processedImageDataUrl)
-        setCoverFile(null) // Will use the processed data URL
+        setCoverFile(null)
       }
 
-      // Populate form with results
-      if (result.metadata) {
-        setTitle(result.metadata.title)
-        setArtist(result.metadata.artist)
-        if (result.metadata.coverArtUrl) {
-          // MusicBrainz cover takes priority over processed image
-          setCoverPreview(result.metadata.coverArtUrl)
-          setProcessedImageDataUrl(null)
-          setCoverFile(null)
-        }
-      } else if (result.extraction.title || result.extraction.artist) {
+      // Populate form with Claude's extraction (NOT MusicBrainz - that requires approval)
+      if (result.extraction.title || result.extraction.artist) {
         setTitle(result.extraction.title || '')
         setArtist(result.extraction.artist || '')
+      }
+
+      // If MusicBrainz found a match, store it for user review (don't auto-apply)
+      if (result.metadata) {
+        setMusicBrainzMatch(result.metadata)
+        setMusicBrainzApproval({ status: 'pending' })
       }
     } catch (err) {
       setRecognition({
@@ -157,6 +174,26 @@ function NewRecordContent() {
         message: err instanceof Error ? err.message : 'Recognition failed'
       })
     }
+  }
+
+  // Handle accepting MusicBrainz match
+  const handleAcceptMusicBrainz = (useCover: boolean) => {
+    if (!musicBrainzMatch) return
+
+    setMusicBrainzApproval({ status: 'accepted', useMusicBrainzCover: useCover })
+    setTitle(musicBrainzMatch.title)
+    setArtist(musicBrainzMatch.artist)
+
+    if (useCover && musicBrainzMatch.coverArtUrl) {
+      setCoverPreview(musicBrainzMatch.coverArtUrl)
+      setProcessedImageDataUrl(null)
+    }
+  }
+
+  // Handle rejecting MusicBrainz match
+  const handleRejectMusicBrainz = () => {
+    setMusicBrainzApproval({ status: 'rejected' })
+    // Keep current form values and user's photo
   }
 
   // Helper to convert data URL to Blob
@@ -239,10 +276,10 @@ function NewRecordContent() {
       coverImageUrl = publicUrl
     }
 
-    // Build metadata from recognition result if available
+    // Build metadata - only use MusicBrainz data if user accepted the match
     const metadata: Record<string, unknown> = {}
-    if (recognition.status === 'success' && recognition.result.metadata) {
-      const { releaseDate, label, tracks } = recognition.result.metadata
+    if (musicBrainzApproval.status === 'accepted' && musicBrainzMatch) {
+      const { releaseDate, label, tracks } = musicBrainzMatch
       if (releaseDate) metadata.releaseDate = releaseDate
       if (label) metadata.label = label
       if (tracks && tracks.length > 0) metadata.tracks = tracks
@@ -315,18 +352,127 @@ function NewRecordContent() {
             </div>
           ) : recognition.status === 'success' ? (
             <div className="py-4">
-              {recognition.result.metadata ? (
-                // Full success - found in MusicBrainz
+              {/* MusicBrainz Match Review */}
+              {musicBrainzMatch && musicBrainzApproval.status === 'pending' ? (
+                <div className="space-y-4">
+                  <div className="flex items-center gap-2 text-sage mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    <span className="font-medium">Found a match - please review</span>
+                  </div>
+
+                  {/* Side by side comparison */}
+                  <div className="grid grid-cols-2 gap-4">
+                    {/* User's photo */}
+                    <div className="text-center">
+                      <p className="text-xs text-walnut/60 mb-2">Your Photo</p>
+                      <div className="aspect-square bg-tan rounded-lg overflow-hidden">
+                        {(processedImageDataUrl || originalImageDataUrl) && (
+                          <Image
+                            src={processedImageDataUrl || originalImageDataUrl || ''}
+                            alt="Your photo"
+                            width={150}
+                            height={150}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        )}
+                      </div>
+                    </div>
+                    {/* MusicBrainz cover */}
+                    <div className="text-center">
+                      <p className="text-xs text-walnut/60 mb-2">MusicBrainz</p>
+                      <div className="aspect-square bg-tan rounded-lg overflow-hidden">
+                        {musicBrainzMatch.coverArtUrl ? (
+                          <Image
+                            src={musicBrainzMatch.coverArtUrl}
+                            alt="MusicBrainz cover"
+                            width={150}
+                            height={150}
+                            className="w-full h-full object-cover"
+                            unoptimized
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-walnut/30 text-xs">
+                            No cover
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Match details */}
+                  <div className="bg-warm-white rounded-lg p-3 text-sm">
+                    <p className="text-walnut">
+                      <span className="font-medium">{musicBrainzMatch.title}</span>
+                      {' '}by {musicBrainzMatch.artist}
+                    </p>
+                    {musicBrainzMatch.releaseDate && (
+                      <p className="text-walnut/60">
+                        Released: {musicBrainzMatch.releaseDate.split('-')[0]}
+                        {musicBrainzMatch.label && ` • ${musicBrainzMatch.label}`}
+                      </p>
+                    )}
+                    <p className="text-walnut/60">
+                      {musicBrainzMatch.trackCount} tracks
+                    </p>
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex flex-col gap-2">
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleAcceptMusicBrainz(false)}
+                        className="flex-1 py-2 px-3 bg-sage text-warm-white rounded-lg text-sm font-medium hover:bg-sage/90 transition-colors"
+                      >
+                        Use Info, Keep My Photo
+                      </button>
+                      {musicBrainzMatch.coverArtUrl && (
+                        <button
+                          type="button"
+                          onClick={() => handleAcceptMusicBrainz(true)}
+                          className="flex-1 py-2 px-3 bg-burnt-orange text-warm-white rounded-lg text-sm font-medium hover:bg-burnt-orange/90 transition-colors"
+                        >
+                          Use Info + Cover
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleRejectMusicBrainz}
+                      className="py-2 px-3 border border-walnut/20 text-walnut rounded-lg text-sm hover:bg-tan/50 transition-colors"
+                    >
+                      Not a Match - Use My Photo Only
+                    </button>
+                  </div>
+                </div>
+              ) : musicBrainzApproval.status === 'accepted' ? (
+                // User accepted the match
                 <>
                   <div className="flex items-center gap-2 text-sage mb-2">
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                     </svg>
-                    <span className="font-medium">Album recognized!</span>
+                    <span className="font-medium">Album info confirmed!</span>
                   </div>
                   <p className="text-sm text-walnut/60">
-                    Found: {recognition.result.metadata.title} by {recognition.result.metadata.artist}
-                    {recognition.result.metadata.releaseDate && ` (${recognition.result.metadata.releaseDate.split('-')[0]})`}
+                    Using: {title} by {artist}
+                    {musicBrainzMatch?.trackCount && ` • ${musicBrainzMatch.trackCount} tracks`}
+                  </p>
+                </>
+              ) : musicBrainzApproval.status === 'rejected' ? (
+                // User rejected the match
+                <>
+                  <div className="flex items-center gap-2 text-mustard mb-2">
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="font-medium">Using your photo only</span>
+                  </div>
+                  <p className="text-sm text-walnut/60">
+                    Please verify the album details below.
                   </p>
                 </>
               ) : recognition.result.extraction.title || recognition.result.extraction.artist ? (
