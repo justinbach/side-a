@@ -53,6 +53,32 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
+      - name: Run tests with coverage
         working-directory: backend
-        run: npm test
+        run: npm run test:coverage
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: backend/coverage/
+          retention-days: 7
+
+      - name: Coverage summary
+        if: always()
+        working-directory: backend
+        run: |
+          if [ -f coverage/coverage-summary.json ]; then
+            echo "## Backend Coverage Summary" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            node -e "
+              const coverage = require('./coverage/coverage-summary.json');
+              const total = coverage.total;
+              console.log('| Metric | Coverage |');
+              console.log('|--------|----------|');
+              console.log('| Statements | ' + total.statements.pct + '% |');
+              console.log('| Branches | ' + total.branches.pct + '% |');
+              console.log('| Functions | ' + total.functions.pct + '% |');
+              console.log('| Lines | ' + total.lines.pct + '% |');
+            " >> $GITHUB_STEP_SUMMARY
+          fi
