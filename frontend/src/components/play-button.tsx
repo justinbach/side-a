@@ -18,14 +18,18 @@ type Play = {
   id: string
   played_at: string
   mood: Mood | null
+  user_id: string
+  profiles: { display_name: string | null } | { display_name: string | null }[] | null
 }
 
 export function PlayButton({
   recordId,
   initialPlays,
+  currentUserId,
 }: {
   recordId: string
   initialPlays: Play[]
+  currentUserId: string
 }) {
   const [plays, setPlays] = useState<Play[]>(initialPlays)
   const [showMoodPicker, setShowMoodPicker] = useState(false)
@@ -49,7 +53,7 @@ export function PlayButton({
         record_id: recordId,
         user_id: user.id,
       })
-      .select('id, played_at, mood')
+      .select('id, played_at, mood, user_id, profiles(display_name)')
       .single()
 
     setIsLogging(false)
@@ -60,7 +64,7 @@ export function PlayButton({
     }
 
     // Add to plays list and show mood picker
-    setPlays([data, ...plays])
+    setPlays([data as Play, ...plays])
     setCurrentPlayId(data.id)
     setShowMoodPicker(true)
   }
@@ -216,10 +220,20 @@ export function PlayButton({
             {plays.slice(0, 10).map((play) => (
               <div key={play.id}>
                 <button
-                  onClick={() => handleEditMood(play.id)}
-                  className="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-tan/30 transition-colors text-left"
+                  onClick={() => play.user_id === currentUserId ? handleEditMood(play.id) : undefined}
+                  className={`w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg transition-colors text-left ${
+                    play.user_id === currentUserId ? 'hover:bg-tan/30 cursor-pointer' : 'cursor-default'
+                  }`}
                 >
                   <span className="text-sm text-walnut/70">
+                    <span className="font-medium">
+                      {play.user_id === currentUserId ? 'You' : (
+                        Array.isArray(play.profiles)
+                          ? play.profiles[0]?.display_name
+                          : play.profiles?.display_name
+                      ) || 'Unknown'}
+                    </span>
+                    <span className="mx-1.5 text-walnut/30">·</span>
                     {formatPlayTime(play.played_at)}
                   </span>
                   {play.mood ? (
@@ -227,11 +241,11 @@ export function PlayButton({
                       <span>{getMoodEmoji(play.mood)}</span>
                       <span>{play.mood}</span>
                     </span>
-                  ) : (
+                  ) : play.user_id === currentUserId ? (
                     <span className="text-sm text-walnut/30 italic">
                       + Add mood
                     </span>
-                  )}
+                  ) : null}
                 </button>
                 {editingPlayId === play.id && (
                   <div className="py-3 px-2 -mx-2 bg-tan/20 rounded-lg mb-1">
