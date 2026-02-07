@@ -28,7 +28,7 @@ export function MembersList({
   const router = useRouter()
   const [removingId, setRemovingId] = useState<string | null>(null)
 
-  const handleRemove = async (memberId: string, userId: string) => {
+  const handleRemove = async (memberId: string) => {
     if (!confirm('Are you sure you want to remove this member?')) return
 
     setRemovingId(memberId)
@@ -102,7 +102,7 @@ export function MembersList({
               )}
               {!isMemberOwner && isOwner && !isCurrentUser && (
                 <button
-                  onClick={() => handleRemove(member.id, member.user_id)}
+                  onClick={() => handleRemove(member.id)}
                   disabled={removingId === member.id}
                   className="text-sm text-red-600 hover:text-red-700 disabled:opacity-50"
                 >

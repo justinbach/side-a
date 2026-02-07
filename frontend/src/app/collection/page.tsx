@@ -70,7 +70,7 @@ export default async function CollectionPage({
   }
 
   // Find selected collection or default to first one
-  let collection = selectedCollectionId
+  const collection = selectedCollectionId
     ? collections.find(c => c.id === selectedCollectionId) || collections[0]
     : collections[0]
 
