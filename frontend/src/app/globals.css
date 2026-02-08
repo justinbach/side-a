@@ -5,12 +5,23 @@
 :root {
   --foreground: #3D2B1F;
   --background: #FAF7F2;
+
+  /* Safe area insets for iOS notches, dynamic island, and home indicator */
+  --safe-area-inset-top: env(safe-area-inset-top);
+  --safe-area-inset-right: env(safe-area-inset-right);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom);
+  --safe-area-inset-left: env(safe-area-inset-left);
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
   font-family: var(--font-dm-sans), system-ui, sans-serif;
+  /* Ensure body respects safe areas */
+  padding-top: var(--safe-area-inset-top);
+  padding-right: var(--safe-area-inset-right);
+  padding-bottom: var(--safe-area-inset-bottom);
+  padding-left: var(--safe-area-inset-left);
 }
 
 /* Focus styles for accessibility */
