@@ -51,10 +51,10 @@ export default async function RecordDetailPage({
     notFound()
   }
 
-  // Fetch play history
+  // Fetch play history with user profiles
   const { data: plays } = await supabase
     .from('plays')
-    .select('id, played_at, mood')
+    .select('id, played_at, mood, user_id, profiles(display_name)')
     .eq('record_id', id)
     .order('played_at', { ascending: false })
 
@@ -126,7 +126,7 @@ export default async function RecordDetailPage({
 
             {/* Play Button with mood picker and history */}
             <div className="mb-8">
-              <PlayButton recordId={record.id} initialPlays={plays || []} />
+              <PlayButton recordId={record.id} initialPlays={plays || []} currentUserId={user.id} />
             </div>
 
             {/* Notes & Rating */}
