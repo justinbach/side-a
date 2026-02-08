@@ -15,8 +15,8 @@ export function PullToRefresh({ onRefresh, children, className = '' }: PullToRef
   const touchStartY = useRef(0)
   const containerRef = useRef<HTMLDivElement>(null)
 
-  const maxPullDistance = 80 // Maximum pull distance in pixels
-  const releaseThreshold = 60 // Distance needed to trigger refresh
+  const maxPullDistance = 100 // Maximum pull distance in pixels
+  const releaseThreshold = 50 // Distance needed to trigger refresh (lowered from 60)
 
   useEffect(() => {
     const container = containerRef.current
@@ -51,9 +51,10 @@ export function PullToRefresh({ onRefresh, children, className = '' }: PullToRef
         e.preventDefault()
 
         // Apply resistance (diminishing returns as you pull further)
-        const distance = Math.min(diff * 0.5, maxPullDistance)
+        // Increased from 0.5 to 0.65 to make it easier to trigger
+        const distance = Math.min(diff * 0.65, maxPullDistance)
         setPullDistance(distance)
-        setPulling(distance > 20)
+        setPulling(distance > 15)
       }
     }
 
