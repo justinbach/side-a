@@ -94,12 +94,14 @@ All three connect to the same GitHub repo. Vercel and Render auto-deploy on push
 
 ---
 
-## Build Order
+## Build Order (Original Plan - ALL STEPS COMPLETE)
 
-1. **Scaffold monorepo** — set up `/frontend` and `/backend`, configure Supabase project, wire up auth (sign up / log in / session management)
-2. **Core CRUD** — add a record manually (title, artist, cover image upload), view collection as a grid/list, delete a record
-3. **Photo recognition flow** — upload album photo → Claude vision → MusicBrainz → populate the add-record form
-4. **Play logging** — Play button on album detail, mood tag picker, play history list
-5. **Notes + star ratings** — star rating widget and notes field on album detail
-6. **Shared collections** — invite flow (owner invites by email), collection membership, RLS policies enforcing access
-7. **Polish** — responsive design at all breakpoints, loading/error states, empty states, general UX refinement
+1. ✅ **Scaffold monorepo** — set up `/frontend` and `/backend`, configure Supabase project, wire up auth (sign up / log in / session management)
+2. ✅ **Core CRUD** — add a record manually (title, artist, cover image upload), view collection as a grid/list, delete a record
+3. ✅ **Photo recognition flow** — upload album photo → Claude vision → MusicBrainz → populate the add-record form
+4. ✅ **Play logging** — Play button on album detail, mood tag picker, play history list
+5. ✅ **Notes + star ratings** — star rating widget and notes field on album detail
+6. ✅ **Shared collections** — invite flow (owner invites by email), collection membership, RLS policies enforcing access
+7. ✅ **Polish** — responsive design at all breakpoints, loading/error states, empty states, general UX refinement
+
+**All core features are now implemented.** See `/BACKLOG.md` for current work priorities and future ideas. Keep BACKLOG.md updated as work progresses.

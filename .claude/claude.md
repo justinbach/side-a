@@ -6,6 +6,19 @@
 - Commit frequently with clear, concise commit messages.
 - Open a PR to main when the feature is complete. Do not merge — leave that to me.
 
+## Documentation Structure
+**Claude-facing docs (this directory):**
+- `CONTEXT.md` - Architecture, design principles, data model, UX guidelines
+- `SESSION_NOTES.md` - Current state, recent work, key decisions (UPDATE THIS as you work)
+- `CLAUDE.md` - This file with workflow instructions
+
+**Human-facing docs (project root):**
+- `/README.md` - Public project overview and setup instructions
+- `/BACKLOG.md` - Single source of truth for tasks and priorities
+
 ## General
-- Read CONTEXT.md in this directory before starting any work.
-- Ask before making decisions that would deviate from the architecture or build order in CONTEXT.md.
+- Start each session by reading SESSION_NOTES.md to understand current state
+- Read CONTEXT.md for architecture and design principles
+- Check /BACKLOG.md for current priorities and planned work
+- Update BACKLOG.md and SESSION_NOTES.md as you complete tasks or make key decisions
+- Ask before making significant architectural changes
