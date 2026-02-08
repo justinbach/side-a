@@ -18,14 +18,18 @@ type Play = {
   id: string
   played_at: string
   mood: Mood | null
+  user_id: string
+  profiles: { display_name: string | null } | { display_name: string | null }[] | null
 }
 
 export function PlayButton({
   recordId,
   initialPlays,
+  currentUserId,
 }: {
   recordId: string
   initialPlays: Play[]
+  currentUserId: string
 }) {
   const [plays, setPlays] = useState<Play[]>(initialPlays)
   const [showMoodPicker, setShowMoodPicker] = useState(false)
@@ -49,7 +53,7 @@ export function PlayButton({
         record_id: recordId,
         user_id: user.id,
       })
-      .select('id, played_at, mood')
+      .select('id, played_at, mood, user_id')
       .single()
 
     setIsLogging(false)
@@ -60,7 +64,8 @@ export function PlayButton({
     }
 
     // Add to plays list and show mood picker
-    setPlays([data, ...plays])
+    // The current user logged this play, so we add their user_id (profiles not needed since we show "You")
+    setPlays([{ ...data, profiles: null }, ...plays])
     setCurrentPlayId(data.id)
     setShowMoodPicker(true)
   }
@@ -158,6 +163,14 @@ export function PlayButton({
     return MOODS.find(m => m.value === mood)?.emoji
   }
 
+  const getDisplayName = (play: Play) => {
+    if (play.user_id === currentUserId) return 'You'
+    if (!play.profiles) return null
+    // Handle both single object and array from Supabase join
+    const profile = Array.isArray(play.profiles) ? play.profiles[0] : play.profiles
+    return profile?.display_name || null
+  }
+
   return (
     <div>
       {/* Log Play Button */}
@@ -220,6 +233,9 @@ export function PlayButton({
                   className="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-tan/30 transition-colors text-left"
                 >
                   <span className="text-sm text-walnut/70">
+                    {getDisplayName(play) && (
+                      <span className="font-medium text-walnut">{getDisplayName(play)} · </span>
+                    )}
                     {formatPlayTime(play.played_at)}
                   </span>
                   {play.mood ? (
