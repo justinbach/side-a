@@ -28,8 +28,9 @@ export function PullToRefresh({ onRefresh, children, className = '' }: PullToRef
 
     const handleTouchStart = (e: TouchEvent) => {
       // Only allow pull-to-refresh if we're at the top of the scrollable container
+      // Use small tolerance (5px) for edge cases where scroll isn't exactly 0
       const scrollTop = window.scrollY || document.documentElement.scrollTop
-      if (scrollTop > 0) return
+      if (scrollTop > 5) return
 
       startY = e.touches[0].clientY
       touchStartY.current = startY
@@ -43,8 +44,9 @@ export function PullToRefresh({ onRefresh, children, className = '' }: PullToRef
       const diff = currentY - startY
 
       // Only pull down (positive diff) and only if at top of page
+      // Use small tolerance (5px) for edge cases where scroll isn't exactly 0
       const scrollTop = window.scrollY || document.documentElement.scrollTop
-      if (diff > 0 && scrollTop === 0) {
+      if (diff > 0 && scrollTop <= 5) {
         // Prevent default scroll behavior when pulling down
         e.preventDefault()
 
