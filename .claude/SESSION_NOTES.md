@@ -170,3 +170,41 @@ None currently.
 - Release threshold of 60px to trigger refresh
 
 **Branch:** `feature/pwa-enhancements` (in progress)
+### 2026-02-08: PWA Navigation and Share - Completing PWA Suite
+**Context:** After pull-to-refresh and safe areas merged (PR #27), continued with remaining PWA affordances.
+
+**Actions:**
+1. Created ShareButton component using Web Share API
+   - Detects if navigator.share is available
+   - Falls back to copy-link modal if not supported
+   - Icon-only mode for compact placement
+   - Added to record detail page title area
+2. Improved splash screen
+   - Updated manifest.json background_color to match cream (#FAF7F2)
+   - Updated theme_color to match burnt-orange (#CC5500)
+3. Created InstallPrompt component
+   - Intercepts beforeinstallprompt event
+   - Custom UI with burnt orange branding
+   - 10-second delay before showing (not aggressive)
+   - Respects 7-day dismissal period via localStorage
+   - Checks if already installed (display-mode: standalone)
+   - Added to root layout for global availability
+4. Navigation improvements
+   - Verified all subpages already have "Back to Collection" links
+   - No additional work needed - already well-implemented
+
+**Technical Details:**
+- ShareButton uses Web Share API with fallback copy-to-clipboard
+- InstallPrompt stores dismissal timestamp in localStorage
+- Safe area padding added to install prompt (.safe-bottom class)
+- Manifest colors now match design system exactly
+
+**All PWA Enhancements Complete:**
+✅ Pull-to-refresh (PR #27)
+✅ Safe area handling (PR #27)
+✅ Navigation patterns (verified existing)
+✅ Native share (this PR)
+✅ Splash screen (this PR)
+✅ Install prompt (this PR)
+
+**Branch:** `feature/pwa-navigation-share` (in progress)

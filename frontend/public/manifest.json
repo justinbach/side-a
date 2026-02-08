@@ -4,8 +4,8 @@
   "description": "Track your vinyl collection and listening habits",
   "start_url": "/collection",
   "display": "standalone",
-  "background_color": "#FFF9F5",
-  "theme_color": "#C75D2C",
+  "background_color": "#FAF7F2",
+  "theme_color": "#CC5500",
   "icons": [
     {
       "src": "/icons/icon-192.png",

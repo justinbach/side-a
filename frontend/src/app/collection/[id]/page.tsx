@@ -9,6 +9,7 @@ import { FetchTracksButton } from '@/components/fetch-tracks-button'
 import { ClearTracksButton } from '@/components/clear-tracks-button'
 import { ReprocessImageButton } from '@/components/reprocess-image-button'
 import { ReplaceImageButton } from '@/components/replace-image-button'
+import { ShareButton } from '@/components/share-button'
 
 type Track = {
   position: number
@@ -119,9 +120,18 @@ export default async function RecordDetailPage({
 
           {/* Record Info */}
           <div className="flex-1">
-            <h1 className="font-serif text-4xl font-bold text-walnut mb-2">
-              {record.title}
-            </h1>
+            <div className="flex items-start justify-between gap-4 mb-2">
+              <div className="flex-1">
+                <h1 className="font-serif text-4xl font-bold text-walnut">
+                  {record.title}
+                </h1>
+              </div>
+              <ShareButton
+                title={`${record.title} by ${record.artist}`}
+                text={`Check out ${record.title} by ${record.artist} on Side A`}
+                iconOnly
+              />
+            </div>
             <p className="text-xl text-walnut/70 mb-8">{record.artist}</p>
 
             {/* Play Button with mood picker and history */}
