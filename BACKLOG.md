@@ -8,12 +8,12 @@
 
 ### PWA Enhancements (High Priority)
 Since Side A is now installable as a PWA, we need native app affordances that account for missing browser controls:
-- [ ] **Pull-to-refresh** — Swipe down to refresh collection/pages (Impact: High, Effort: Low)
-- [ ] **Safe area handling** — Support for notches, dynamic island, home indicator (Impact: High, Effort: Low)
-- [ ] **Navigation improvements** — Clear back button/gesture patterns when deep in app (Impact: Medium, Effort: Low)
-- [ ] **Native share functionality** — Share albums/plays without browser share button (Impact: Medium, Effort: Low)
-- [ ] **Improved splash screen** — Branded loading screen on app launch (Impact: Low, Effort: Low)
-- [ ] **Install prompt optimization** — Better UX for prompting users to install (Impact: Medium, Effort: Low)
+- [x] **Pull-to-refresh** — Swipe down to refresh collection/pages (Impact: High, Effort: Low)
+- [x] **Safe area handling** — Support for notches, dynamic island, home indicator (Impact: High, Effort: Low)
+- [x] **Navigation improvements** — Clear back button patterns (already implemented) (Impact: Medium, Effort: Low)
+- [x] **Native share functionality** — Share albums/plays without browser share button (Impact: Medium, Effort: Low)
+- [x] **Improved splash screen** — Match brand colors in manifest (Impact: Low, Effort: Low)
+- [x] **Install prompt optimization** — Custom prompt with 10s delay and 7-day dismissal (Impact: Medium, Effort: Low)
 
 ### Analytics & Personal Stats
 - [ ] User analytics / personal listening stats
