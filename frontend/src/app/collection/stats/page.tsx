@@ -100,7 +100,6 @@ export default async function CollectionStatsPage({
   for (const play of plays) {
     const userId = play.user_id
     const playDate = new Date(play.played_at)
-
     // Handle both single object and array from Supabase join
     const profile = Array.isArray(play.profiles) ? play.profiles[0] : play.profiles
     const displayName = profile?.display_name || 'Unknown'
