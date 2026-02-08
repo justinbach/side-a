@@ -1,8 +1,6 @@
 # Side A - Product Backlog
 
 ## In Progress
-- [ ] Show user names on play history
-- [ ] Collection stats page - listening habits per user
 
 ## Planned
 - [ ] User analytics / personal listening stats
@@ -19,6 +17,8 @@
 - [ ] Export collection data
 
 ## Completed
+- [x] Show user names on play history (PR #22)
+- [x] Collection stats page - listening habits per user (PR #22)
 - [x] MusicBrainz approval step (PR #17)
 - [x] Image reprocessing with approval (PR #18)
 - [x] Replace image button (PR #19)
