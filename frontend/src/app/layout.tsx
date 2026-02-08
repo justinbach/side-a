@@ -1,4 +1,4 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 
@@ -12,12 +12,29 @@ const playfair = Playfair_Display({
   variable: '--font-playfair',
 })
 
+export const viewport: Viewport = {
+  themeColor: '#C75D2C',
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
   title: 'Side A',
-  description: 'A vinyl record collection tracker',
+  description: 'Track your vinyl collection and listening habits',
+  manifest: '/manifest.json',
   icons: {
     icon: '/favicon.svg',
-    apple: '/logo.svg',
+    apple: '/icons/apple-touch-icon.png',
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: 'default',
+    title: 'Side A',
+  },
+  other: {
+    'mobile-web-app-capable': 'yes',
   },
 }
 
