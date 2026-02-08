@@ -7,5 +7,7 @@
 - Open a PR to main when the feature is complete. Do not merge — leave that to me.
 
 ## General
-- Read CONTEXT.md in this directory before starting any work.
-- Ask before making decisions that would deviate from the architecture or build order in CONTEXT.md.
+- Read CONTEXT.md in this directory for project architecture and design principles.
+- Check /BACKLOG.md (in project root) for current priorities and planned work.
+- Update BACKLOG.md as you complete tasks or identify new work.
+- Ask before making significant architectural changes.
