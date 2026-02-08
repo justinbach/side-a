@@ -8,8 +8,8 @@ This file captures the current state of the project, recent work, and key practi
 
 ## Current State
 
-**Branch:** `feature/update-docs`
-**Status:** Documenting project structure and practices
+**Branch:** `feature/structured-backlog`
+**Status:** Building out feature backlog with Impact/Effort prioritization
 
 ### All Core Features Complete ✅
 - Photo-based album recognition (Claude vision → MusicBrainz)
@@ -28,7 +28,8 @@ This file captures the current state of the project, recent work, and key practi
 - **2026-02-07:** PWA support merged (PR #24)
 - **2026-02-07:** Mobile layout fixes for collection header (PR #23)
 - **2026-02-07:** User play tracking with collection stats page (PR #22)
-- **2026-02-08:** Documentation restructure (current PR #25)
+- **2026-02-08:** Documentation restructure merged (PR #25)
+- **2026-02-08:** Feature backlog restructure with Impact/Effort prioritization (in progress)
 
 ---
 
@@ -44,7 +45,7 @@ This file captures the current state of the project, recent work, and key practi
 ### Documentation Structure
 **Human-Facing (Root):**
 - `README.md` - Public project overview, setup instructions
-- `BACKLOG.md` - Single source of truth for tasks (In Progress / Planned / Ideas / Completed)
+- `BACKLOG.md` - Single source of truth for tasks (In Progress / Planned / Feature Backlog / Completed)
 
 **Claude-Facing (.claude/):**
 - `.claude/CONTEXT.md` - Architecture, design principles, data model, UX guidelines
@@ -115,4 +116,27 @@ None currently.
 
 **Key Learning:** Feature branch discipline is critical. Always check workflow before committing.
 
-**Branch:** `feature/update-docs` (PR #25)
+**Branch:** `feature/update-docs` (PR #25, merged)
+
+### 2026-02-08: Feature Backlog Restructure
+**Context:** Brainstormed extensive feature list across analytics, social, metadata, and integrations. Needed structure and prioritization.
+
+**Actions:**
+1. Defined prioritization framework: Impact (user value) + Effort (development complexity)
+2. Chose simple H/M/L scoring for maintainability
+3. Kept single source of truth in BACKLOG.md (replaced "Ideas / Future" section)
+4. Organized ~60 features across 8 categories:
+   - Analytics & Insights
+   - Social & Activity
+   - Metadata & Collection Management
+   - Enhanced Play Logging
+   - Import & Integration
+   - Discovery & Recommendations
+   - Collection Features
+   - Mobile & UX Enhancements
+   - Hardware & Advanced Integration
+5. Added dependencies where relevant
+
+**Key Learning:** Simple, scannable format (one-liner per feature) easier to maintain than detailed specs. Priority naturally emerges from Impact/Effort matrix.
+
+**Branch:** `feature/structured-backlog` (in progress)

@@ -11,12 +11,82 @@
   - Mood patterns over time
   - Listening streaks
 
-## Ideas / Future
-- [ ] Sonos/turntable integration (actual playback)
-- [ ] Album recommendations based on listening history
-- [ ] Social features (follow other collectors, share plays)
-- [ ] Import from Discogs
-- [ ] Export collection data
+## Feature Backlog
+
+Features organized by category with Impact (user value) and Effort (development complexity) scores.
+**Quick wins** = High Impact + Low Effort. **Major projects** = High Impact + High Effort.
+
+### Analytics & Insights
+- **Listening velocity trends** — Plays per day/week over time with charts (Impact: Medium, Effort: Low) [Depends on: Personal stats]
+- **Genre/decade breakdown** — Visualize collection and listening by genre/era (Impact: Medium, Effort: Medium)
+- **Year-in-review summary** — Annual recap with stats, top albums, and highlights (Impact: Medium, Effort: Medium) [Depends on: Personal stats]
+- **Comparative stats** — Compare your plays vs other collection members (Impact: Medium, Effort: Low) [Depends on: Personal stats]
+- **Collection growth timeline** — Track when albums were added over time (Impact: Low, Effort: Low)
+- **Deep cuts finder** — Surface albums you haven't played recently (Impact: Medium, Effort: Low)
+- **Listening time estimates** — Total hours listened based on track lengths (Impact: Low, Effort: Medium)
+
+### Social & Activity
+- **Activity feed** — See recent plays across all your collections (Impact: High, Effort: Medium)
+- **Now playing status** — Real-time "currently listening" for collection members (Impact: Medium, Effort: Low)
+- **Comments on albums** — Discussion threads per record in collection (Impact: Medium, Effort: Medium)
+- **Reactions on plays** — Like/heart plays from collection members (Impact: Low, Effort: Low)
+- **Public profiles** — Optional public page with stats and favorite albums (Impact: Medium, Effort: Medium)
+- **Follow users/collections** — Discover and follow collectors outside your collections (Impact: Medium, Effort: High)
+- **Share plays to social** — Post individual plays to Twitter/Instagram (Impact: Low, Effort: Low)
+- **Listening parties** — Synchronized listening sessions with chat (Impact: Low, Effort: High)
+
+### Metadata & Collection Management
+- **Pressing/edition info** — Track country, year, label variant per record (Impact: High, Effort: Low)
+- **Condition tracking** — Record condition grades (VG+, NM, etc.) (Impact: High, Effort: Low)
+- **Purchase info** — Date, price, source/store for each record (Impact: Medium, Effort: Low)
+- **Custom tags** — User-defined tags beyond moods (genres, themes, "winter albums") (Impact: High, Effort: Medium)
+- **Want list** — Track albums you're looking to acquire (Impact: Medium, Effort: Medium)
+- **Storage location** — Shelf/crate numbers for physical organization (Impact: Medium, Effort: Low)
+- **Loan tracking** — Track who you've lent records to (Impact: Low, Effort: Low)
+- **Collection value estimation** — Estimate total collection value via Discogs prices (Impact: Medium, Effort: High)
+- **Duplicate detection** — Identify and manage duplicate albums (Impact: Low, Effort: Medium)
+- **Bulk operations** — Multi-select for batch edits and tagging (Impact: Medium, Effort: Medium)
+- **Advanced search/filtering** — Complex queries and saved searches (Impact: Medium, Effort: Medium)
+
+### Enhanced Play Logging
+- **Listening context** — Who with, occasion, location metadata (Impact: Medium, Effort: Low)
+- **Side-specific logging** — Log Side A vs Side B separately (Impact: Low, Effort: Low)
+- **Equipment notes** — Track which turntable/system used (Impact: Low, Effort: Low)
+- **Attach photos to plays** — Add photos of listening setup or environment (Impact: Low, Effort: Medium)
+- **Skip tracking** — Mark incomplete listens (Impact: Low, Effort: Low)
+
+### Import & Integration
+- **Discogs import** — Full collection sync from Discogs (Impact: High, Effort: High)
+- **Export collection data** — CSV/JSON export with custom fields (Impact: Medium, Effort: Low)
+- **Last.fm scrobbling** — Auto-sync plays to Last.fm (Impact: Medium, Effort: Medium)
+- **Barcode/catalog scanning** — Quick add via barcode scan (Impact: Medium, Effort: Medium)
+- **Spotify/Apple Music links** — Compare vinyl vs streaming habits (Impact: Low, Effort: Medium)
+- **Discogs marketplace integration** — Price checking and value tracking (Impact: Medium, Effort: High) [Depends on: Discogs import]
+- **API for third-party integrations** — Public API for custom tools (Impact: Low, Effort: High)
+
+### Discovery & Recommendations
+- **Album recommendations** — Suggest new albums based on collection and plays (Impact: High, Effort: High)
+- **Similar albums** — Find records similar to ones you own (Impact: Medium, Effort: High)
+- **New release alerts** — Notifications for artists in your collection (Impact: Medium, Effort: Medium)
+- **Trending in community** — See popular albums across all Side A users (Impact: Low, Effort: Medium)
+- **Record store finder/map** — Discover local record shops (Impact: Low, Effort: Medium)
+
+### Collection Features
+- **Multiple personal collections** — Organize by genre, format, etc. (Impact: Medium, Effort: Medium)
+- **Shelving visualization** — Virtual shelf view with album spines (Impact: Low, Effort: High)
+- **Print collection catalog** — Generate PDF catalog for insurance/display (Impact: Low, Effort: Medium)
+
+### Mobile & UX Enhancements
+- **Dark mode** — Dark color scheme option (Impact: Medium, Effort: Low)
+- **Accessibility improvements** — Screen reader support, keyboard nav, ARIA labels (Impact: High, Effort: Medium)
+- **Offline mode** — View collection without internet (Impact: Medium, Effort: High)
+- **Home screen widgets** — iOS/Android widgets for quick logging (Impact: Medium, Effort: Medium)
+- **iOS Shortcuts / Siri** — Voice commands for logging plays (Impact: Low, Effort: High)
+- **NFC tag integration** — Tap NFC stickers per album for instant logging (Impact: Low, Effort: High)
+
+### Hardware & Advanced Integration
+- **Sonos integration** — Detect and log actual playback from Sonos (Impact: Medium, Effort: High)
+- **Turntable integration** — Auto-detect plays from smart turntables (Impact: Low, Effort: High)
 
 ## Completed
 - [x] PWA support - home screen installation (PR #24)
