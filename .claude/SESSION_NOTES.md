@@ -8,8 +8,8 @@ This file captures the current state of the project, recent work, and key practi
 
 ## Current State
 
-**Branch:** `feature/structured-backlog`
-**Status:** Building out feature backlog with Impact/Effort prioritization
+**Branch:** `feature/pwa-enhancements`
+**Status:** Implementing PWA native affordances (pull-to-refresh, safe areas)
 
 ### All Core Features Complete ✅
 - Photo-based album recognition (Claude vision → MusicBrainz)
@@ -29,7 +29,8 @@ This file captures the current state of the project, recent work, and key practi
 - **2026-02-07:** Mobile layout fixes for collection header (PR #23)
 - **2026-02-07:** User play tracking with collection stats page (PR #22)
 - **2026-02-08:** Documentation restructure merged (PR #25)
-- **2026-02-08:** Feature backlog restructure with Impact/Effort prioritization (in progress)
+- **2026-02-08:** Feature backlog restructure merged (PR #26)
+- **2026-02-08:** PWA enhancements - pull-to-refresh and safe areas (in progress)
 
 ---
 
@@ -139,4 +140,33 @@ None currently.
 
 **Key Learning:** Simple, scannable format (one-liner per feature) easier to maintain than detailed specs. Priority naturally emerges from Impact/Effort matrix.
 
-**Branch:** `feature/structured-backlog` (in progress)
+**Branch:** `feature/structured-backlog` (PR #26, merged)
+
+### 2026-02-08: PWA Enhancements - Native App Affordances
+**Context:** With PWA installed, users lose browser controls (refresh button, back button, address bar). Need native app behaviors.
+
+**Actions:**
+1. Added safe area CSS support for iOS notches, dynamic island, and home indicator
+   - Added CSS env() variables to globals.css
+   - Set viewport-fit=cover in layout.tsx
+   - Applied safe area padding to body element
+2. Implemented pull-to-refresh component
+   - Custom touch handlers for pull gesture
+   - Burnt orange spinner matching design system
+   - Smooth animations with resistance curve
+   - Integrated into CollectionView with router.refresh()
+3. Added PWA enhancements to BACKLOG.md planned work:
+   - Pull-to-refresh ✅
+   - Safe area handling ✅
+   - Navigation improvements (pending)
+   - Native share functionality (pending)
+   - Improved splash screen (pending)
+   - Install prompt optimization (pending)
+
+**Technical Details:**
+- Pull-to-refresh only activates at top of scroll (window.scrollY === 0)
+- Prevents default scroll when pulling down
+- Applies resistance curve (distance * 0.5) for natural feel
+- Release threshold of 60px to trigger refresh
+
+**Branch:** `feature/pwa-enhancements` (in progress)

@@ -18,6 +18,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   userScalable: false,
+  viewportFit: 'cover', // Allow content to extend into safe areas (notch, dynamic island)
 }
 
 export const metadata: Metadata = {
