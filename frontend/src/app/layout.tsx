@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from 'next'
 import { DM_Sans, Playfair_Display } from 'next/font/google'
 import './globals.css'
 import { InstallPrompt } from '@/components/install-prompt'
+import { PwaUpdateBanner } from '@/components/pwa-update-banner'
 
 const dmSans = DM_Sans({
   subsets: ['latin'],
@@ -50,6 +51,7 @@ export default function RootLayout({
       <body className="min-h-screen bg-cream text-walnut antialiased">
         {children}
         <InstallPrompt />
+        <PwaUpdateBanner />
       </body>
     </html>
   )
