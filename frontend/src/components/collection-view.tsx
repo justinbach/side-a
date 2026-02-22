@@ -6,7 +6,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { RecordGrid } from './record-grid'
-import { PullToRefresh } from './pull-to-refresh'
+
 
 type Collection = {
   id: string
@@ -136,16 +136,8 @@ export function CollectionView({
 
   const hasFilters = search.trim() || moodFilter
 
-  const handleRefresh = async () => {
-    // Refresh the page data
-    router.refresh()
-    // Add a small delay to ensure the refresh completes
-    await new Promise(resolve => setTimeout(resolve, 500))
-  }
-
   return (
-    <PullToRefresh onRefresh={handleRefresh}>
-      <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8">
       <header className="max-w-5xl mx-auto flex justify-between items-center mb-12">
         <Link href="/collection" className="flex items-center gap-3">
           <Image src="/logo.svg" alt="Side A" width={40} height={40} />
@@ -343,6 +335,5 @@ export function CollectionView({
         )}
       </div>
     </main>
-    </PullToRefresh>
   )
 }
