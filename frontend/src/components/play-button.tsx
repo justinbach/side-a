@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 
 const MOODS = [
@@ -34,73 +34,28 @@ export function PlayButton({
   isMember?: boolean
 }) {
   const [plays, setPlays] = useState<Play[]>(initialPlays)
-  const [showMoodPicker, setShowMoodPicker] = useState(false)
-  const [currentPlayId, setCurrentPlayId] = useState<string | null>(null)
+  const [loggingMood, setLoggingMood] = useState<Mood | 'none' | null>(null)
   const [editingPlayId, setEditingPlayId] = useState<string | null>(null)
-  const [isLogging, setIsLogging] = useState(false)
 
-  const handlePlay = async () => {
-    setIsLogging(true)
+  // Single-step log: tap a mood pill or "no mood" — one action, play created immediately
+  const handleLog = async (mood: Mood | null) => {
+    setLoggingMood(mood ?? 'none')
     const supabase = createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-
-    if (!user) {
-      setIsLogging(false)
-      return
-    }
 
     const { data, error } = await supabase
       .from('plays')
-      .insert({
-        record_id: recordId,
-        user_id: user.id,
-      })
+      .insert({ record_id: recordId, user_id: currentUserId, mood })
       .select('id, played_at, mood, user_id')
       .single()
 
-    setIsLogging(false)
+    setLoggingMood(null)
 
     if (error) {
       console.error('Failed to log play:', error)
       return
     }
 
-    // Add to plays list and show mood picker
-    // The current user logged this play, so we add their user_id (profiles not needed since we show "You")
-    setPlays([{ ...data, profiles: null }, ...plays])
-    setCurrentPlayId(data.id)
-    setShowMoodPicker(true)
-  }
-
-  const handleMoodSelect = async (mood: Mood) => {
-    if (!currentPlayId) return
-
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('plays')
-      .update({ mood })
-      .eq('id', currentPlayId)
-
-    if (error) {
-      console.error('Failed to update mood:', error)
-      return
-    }
-
-    // Update local state
-    setPlays(plays.map(p =>
-      p.id === currentPlayId ? { ...p, mood } : p
-    ))
-    setShowMoodPicker(false)
-    setCurrentPlayId(null)
-  }
-
-  const handleSkipMood = () => {
-    setShowMoodPicker(false)
-    setCurrentPlayId(null)
-  }
-
-  const handleEditMood = (playId: string) => {
-    setEditingPlayId(editingPlayId === playId ? null : playId)
+    setPlays(prev => [{ ...data, profiles: null }, ...prev])
   }
 
   const handleUpdateMood = async (playId: string, mood: Mood | null) => {
@@ -115,144 +70,133 @@ export function PlayButton({
       return
     }
 
-    setPlays(plays.map(p =>
-      p.id === playId ? { ...p, mood } : p
-    ))
+    setPlays(prev => prev.map(p => p.id === playId ? { ...p, mood } : p))
     setEditingPlayId(null)
   }
 
-  // Auto-hide mood picker after 10 seconds
-  useEffect(() => {
-    if (showMoodPicker) {
-      const timer = setTimeout(() => {
-        setShowMoodPicker(false)
-        setCurrentPlayId(null)
-      }, 10000)
-      return () => clearTimeout(timer)
+  const handleDelete = async (playId: string) => {
+    const previous = plays
+    setPlays(prev => prev.filter(p => p.id !== playId))
+    setEditingPlayId(null)
+
+    const supabase = createClient()
+    const { error } = await supabase.from('plays').delete().eq('id', playId)
+
+    if (error) {
+      console.error('Failed to delete play:', error)
+      setPlays(previous)
     }
-  }, [showMoodPicker])
+  }
 
   const formatPlayTime = (dateStr: string) => {
     const date = new Date(dateStr)
     const now = new Date()
-    const isToday = date.toDateString() === now.toDateString()
     const yesterday = new Date(now)
     yesterday.setDate(yesterday.getDate() - 1)
-    const isYesterday = date.toDateString() === yesterday.toDateString()
 
-    const time = date.toLocaleTimeString('en-US', {
-      hour: 'numeric',
-      minute: '2-digit',
-      hour12: true,
-    })
+    const time = date.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', hour12: true })
 
-    if (isToday) {
-      return `Today, ${time}`
-    } else if (isYesterday) {
-      return `Yesterday, ${time}`
-    } else {
-      return date.toLocaleDateString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        hour: 'numeric',
-        minute: '2-digit',
-      })
-    }
+    if (date.toDateString() === now.toDateString()) return `Today, ${time}`
+    if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${time}`
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })
   }
 
-  const getMoodEmoji = (mood: Mood | null) => {
-    if (!mood) return null
-    return MOODS.find(m => m.value === mood)?.emoji
-  }
+  const getMoodEmoji = (mood: Mood | null) => MOODS.find(m => m.value === mood)?.emoji ?? null
 
   const getDisplayName = (play: Play) => {
     if (play.user_id === currentUserId) return 'You'
     if (!play.profiles) return null
-    // Handle both single object and array from Supabase join
     const profile = Array.isArray(play.profiles) ? play.profiles[0] : play.profiles
     return profile?.display_name || null
   }
 
+  const isOwnPlay = (play: Play) => play.user_id === currentUserId
+
   return (
     <div>
-      {/* Log Play Button — only for collection members */}
+      {/* Logging UI: single-step — tap a mood to log, or log without one */}
       {isMember && (
-        <button
-          onClick={handlePlay}
-          disabled={isLogging || showMoodPicker}
-          className="w-full md:w-auto px-10 py-5 bg-burnt-orange text-warm-white rounded-xl font-medium text-xl hover:bg-burnt-orange/90 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
-        >
-          <span className="flex items-center justify-center gap-3">
-            {isLogging ? (
-              <>
-                <div className="w-6 h-6 border-2 border-warm-white border-t-transparent rounded-full animate-spin" />
-                Logging...
-              </>
-            ) : (
-              <>
-                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                </svg>
-                Log Play
-              </>
-            )}
-          </span>
-        </button>
-      )}
-
-      {/* Mood Picker */}
-      {showMoodPicker && (
-        <div className="mt-6 p-5 bg-warm-white rounded-xl border border-walnut/10 shadow-md animate-in fade-in slide-in-from-top-2 duration-300">
-          <p className="text-sm text-walnut/70 mb-3">How are you listening?</p>
+        <div>
+          <p className="text-sm text-walnut/60 mb-3">Log a play</p>
           <div className="flex flex-wrap gap-2">
             {MOODS.map((mood) => (
               <button
                 key={mood.value}
-                onClick={() => handleMoodSelect(mood.value)}
-                className="px-4 py-2 bg-tan/50 hover:bg-burnt-orange/10 border border-walnut/10 rounded-full text-sm text-walnut transition-colors flex items-center gap-2"
+                onClick={() => handleLog(mood.value)}
+                disabled={loggingMood !== null}
+                className="px-4 py-2.5 bg-burnt-orange text-warm-white rounded-full font-medium text-sm hover:bg-burnt-orange/90 transition-all hover:scale-[1.03] active:scale-[0.97] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2 shadow-sm"
               >
-                <span>{mood.emoji}</span>
+                {loggingMood === mood.value ? (
+                  <div className="w-3.5 h-3.5 border-2 border-warm-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <span>{mood.emoji}</span>
+                )}
                 <span>{mood.label}</span>
               </button>
             ))}
           </div>
           <button
-            onClick={handleSkipMood}
-            className="mt-3 text-sm text-walnut/50 hover:text-walnut transition-colors"
+            onClick={() => handleLog(null)}
+            disabled={loggingMood !== null}
+            className="mt-3 text-sm text-walnut/50 hover:text-walnut transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5"
           >
-            Skip
+            {loggingMood === 'none' && (
+              <div className="w-3 h-3 border-2 border-walnut/50 border-t-transparent rounded-full animate-spin" />
+            )}
+            Log without mood
           </button>
         </div>
       )}
 
       {/* Play History */}
       {plays.length > 0 && (
-        <div className="mt-8">
+        <div className={isMember ? 'mt-8' : ''}>
           <h3 className="font-serif text-lg text-walnut mb-4">Play History</h3>
           <div className="space-y-1">
             {plays.slice(0, 10).map((play) => (
               <div key={play.id}>
-                <button
-                  onClick={() => isMember && play.user_id === currentUserId && handleEditMood(play.id)}
-                  className={`w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg text-left transition-colors ${isMember && play.user_id === currentUserId ? 'hover:bg-tan/30 cursor-pointer' : 'cursor-default'}`}
-                >
-                  <span className="text-sm text-walnut/70">
-                    {getDisplayName(play) && (
-                      <span className="font-medium text-walnut">{getDisplayName(play)} · </span>
-                    )}
-                    {formatPlayTime(play.played_at)}
-                  </span>
-                  {play.mood ? (
-                    <span className="text-sm text-walnut/50 flex items-center gap-1">
-                      <span>{getMoodEmoji(play.mood)}</span>
-                      <span>{play.mood}</span>
+                <div className="flex items-center gap-2 py-2 px-2 -mx-2 rounded-lg group">
+                  {/* Row — tappable to edit mood on own plays */}
+                  <button
+                    onClick={() => {
+                      if (isMember && isOwnPlay(play)) {
+                        setEditingPlayId(editingPlayId === play.id ? null : play.id)
+                      }
+                    }}
+                    className={`flex-1 flex items-center justify-between text-left min-w-0 ${isMember && isOwnPlay(play) ? 'cursor-pointer' : 'cursor-default'}`}
+                  >
+                    <span className="text-sm text-walnut/70 truncate">
+                      {getDisplayName(play) && (
+                        <span className="font-medium text-walnut">{getDisplayName(play)} · </span>
+                      )}
+                      {formatPlayTime(play.played_at)}
                     </span>
-                  ) : isMember && play.user_id === currentUserId ? (
-                    <span className="text-sm text-walnut/30 italic">
-                      + Add mood
-                    </span>
-                  ) : null}
-                </button>
+                    {play.mood ? (
+                      <span className="text-sm text-walnut/50 flex items-center gap-1 flex-shrink-0 ml-2">
+                        <span>{getMoodEmoji(play.mood)}</span>
+                        <span>{play.mood}</span>
+                      </span>
+                    ) : isMember && isOwnPlay(play) ? (
+                      <span className="text-sm text-walnut/30 italic flex-shrink-0 ml-2">+ mood</span>
+                    ) : null}
+                  </button>
+
+                  {/* Delete — own plays, appears on hover/focus */}
+                  {isMember && isOwnPlay(play) && (
+                    <button
+                      onClick={() => handleDelete(play.id)}
+                      className="flex-shrink-0 text-walnut/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5"
+                      title="Delete play"
+                      aria-label="Delete play"
+                    >
+                      <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+
+                {/* Inline mood editor */}
                 {editingPlayId === play.id && (
                   <div className="py-3 px-2 -mx-2 bg-tan/20 rounded-lg mb-1">
                     <div className="flex flex-wrap gap-2">
