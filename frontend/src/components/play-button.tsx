@@ -26,10 +26,12 @@ export function PlayButton({
   recordId,
   initialPlays,
   currentUserId,
+  isMember = true,
 }: {
   recordId: string
   initialPlays: Play[]
   currentUserId: string
+  isMember?: boolean
 }) {
   const [plays, setPlays] = useState<Play[]>(initialPlays)
   const [showMoodPicker, setShowMoodPicker] = useState(false)
@@ -173,28 +175,30 @@ export function PlayButton({
 
   return (
     <div>
-      {/* Log Play Button */}
-      <button
-        onClick={handlePlay}
-        disabled={isLogging || showMoodPicker}
-        className="w-full md:w-auto px-10 py-5 bg-burnt-orange text-warm-white rounded-xl font-medium text-xl hover:bg-burnt-orange/90 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
-      >
-        <span className="flex items-center justify-center gap-3">
-          {isLogging ? (
-            <>
-              <div className="w-6 h-6 border-2 border-warm-white border-t-transparent rounded-full animate-spin" />
-              Logging...
-            </>
-          ) : (
-            <>
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-              </svg>
-              Log Play
-            </>
-          )}
-        </span>
-      </button>
+      {/* Log Play Button — only for collection members */}
+      {isMember && (
+        <button
+          onClick={handlePlay}
+          disabled={isLogging || showMoodPicker}
+          className="w-full md:w-auto px-10 py-5 bg-burnt-orange text-warm-white rounded-xl font-medium text-xl hover:bg-burnt-orange/90 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:hover:scale-100"
+        >
+          <span className="flex items-center justify-center gap-3">
+            {isLogging ? (
+              <>
+                <div className="w-6 h-6 border-2 border-warm-white border-t-transparent rounded-full animate-spin" />
+                Logging...
+              </>
+            ) : (
+              <>
+                <svg className="w-7 h-7" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+                Log Play
+              </>
+            )}
+          </span>
+        </button>
+      )}
 
       {/* Mood Picker */}
       {showMoodPicker && (
@@ -229,8 +233,8 @@ export function PlayButton({
             {plays.slice(0, 10).map((play) => (
               <div key={play.id}>
                 <button
-                  onClick={() => handleEditMood(play.id)}
-                  className="w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg hover:bg-tan/30 transition-colors text-left"
+                  onClick={() => isMember && play.user_id === currentUserId && handleEditMood(play.id)}
+                  className={`w-full flex items-center justify-between py-2 px-2 -mx-2 rounded-lg text-left transition-colors ${isMember && play.user_id === currentUserId ? 'hover:bg-tan/30 cursor-pointer' : 'cursor-default'}`}
                 >
                   <span className="text-sm text-walnut/70">
                     {getDisplayName(play) && (
@@ -243,11 +247,11 @@ export function PlayButton({
                       <span>{getMoodEmoji(play.mood)}</span>
                       <span>{play.mood}</span>
                     </span>
-                  ) : (
+                  ) : isMember && play.user_id === currentUserId ? (
                     <span className="text-sm text-walnut/30 italic">
                       + Add mood
                     </span>
-                  )}
+                  ) : null}
                 </button>
                 {editingPlayId === play.id && (
                   <div className="py-3 px-2 -mx-2 bg-tan/20 rounded-lg mb-1">

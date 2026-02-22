@@ -52,6 +52,18 @@ export default async function RecordDetailPage({
     notFound()
   }
 
+  // Check if the current user is a member of this record's collection.
+  // RLS on collections only returns rows for members, so a null result means
+  // the user is viewing via the social feed and has no edit rights.
+  const { data: collection } = await supabase
+    .from('collections')
+    .select('id, owner_id')
+    .eq('id', record.collection_id)
+    .single()
+
+  const isMember = !!collection
+  const isOwner = collection?.owner_id === user.id
+
   // Fetch play history with user profiles
   const { data: plays } = await supabase
     .from('plays')
@@ -106,16 +118,18 @@ export default async function RecordDetailPage({
                 </div>
               )}
             </div>
-            {record.cover_image_url && (
+            {isOwner && record.cover_image_url && (
               <ReprocessImageButton
                 recordId={record.id}
                 currentImageUrl={record.cover_image_url}
               />
             )}
-            <ReplaceImageButton
-              recordId={record.id}
-              currentImageUrl={record.cover_image_url}
-            />
+            {isOwner && (
+              <ReplaceImageButton
+                recordId={record.id}
+                currentImageUrl={record.cover_image_url}
+              />
+            )}
           </div>
 
           {/* Record Info */}
@@ -136,13 +150,15 @@ export default async function RecordDetailPage({
 
             {/* Play Button with mood picker and history */}
             <div className="mb-8">
-              <PlayButton recordId={record.id} initialPlays={plays || []} currentUserId={user.id} />
+              <PlayButton recordId={record.id} initialPlays={plays || []} currentUserId={user.id} isMember={isMember} />
             </div>
 
             {/* Notes & Rating */}
-            <div className="mb-8 p-6 bg-warm-white rounded-xl border border-walnut/10">
-              <NotesSection recordId={record.id} initialNote={note} />
-            </div>
+            {isMember && (
+              <div className="mb-8 p-6 bg-warm-white rounded-xl border border-walnut/10">
+                <NotesSection recordId={record.id} initialNote={note} />
+              </div>
+            )}
 
             {/* Album Details */}
             {(() => {
@@ -177,7 +193,7 @@ export default async function RecordDetailPage({
                     <div className="mb-8">
                       <div className="flex items-center justify-between mb-3">
                         <h2 className="font-serif text-lg text-walnut">Track List</h2>
-                        <ClearTracksButton recordId={record.id} />
+                        {isMember && <ClearTracksButton recordId={record.id} />}
                       </div>
                       <ol className="space-y-1">
                         {metadata!.tracks!.map((track) => (
@@ -191,7 +207,7 @@ export default async function RecordDetailPage({
                         ))}
                       </ol>
                     </div>
-                  ) : (
+                  ) : isMember ? (
                     <div className="mb-8">
                       <FetchTracksButton
                         recordId={record.id}
@@ -199,15 +215,17 @@ export default async function RecordDetailPage({
                         artist={record.artist}
                       />
                     </div>
-                  )}
+                  ) : null}
                 </>
               )
             })()}
 
             {/* Actions */}
-            <div className="pt-6 border-t border-walnut/10">
-              <DeleteRecordButton recordId={record.id} />
-            </div>
+            {isOwner && (
+              <div className="pt-6 border-t border-walnut/10">
+                <DeleteRecordButton recordId={record.id} />
+              </div>
+            )}
           </div>
         </div>
       </div>
