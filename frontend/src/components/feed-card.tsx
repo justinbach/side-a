@@ -90,7 +90,7 @@ export function FeedCard({ play }: FeedCardProps) {
         {/* Play Info */}
         <div className="flex-1 min-w-0">
           {/* User & Time */}
-          <div className="flex items-center gap-2 mb-2 text-sm text-walnut/60">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 text-sm text-walnut/60">
             <Link
               href={`/profile/${profile.id}`}
               className="font-medium text-walnut hover:text-burnt-orange transition-colors"
