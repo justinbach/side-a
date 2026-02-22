@@ -102,7 +102,7 @@ export function UserSearch({ currentUserId }: { currentUserId: string }) {
 
       {!loading && searchTerm && results.length === 0 && (
         <div className="mt-4 text-center text-walnut/50 p-8 bg-warm-white rounded-xl border border-walnut/10">
-          No users found matching "{searchTerm}"
+          No users found matching &quot;{searchTerm}&quot;
         </div>
       )}
     </div>

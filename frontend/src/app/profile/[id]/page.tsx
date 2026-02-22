@@ -13,8 +13,6 @@ const MOODS = [
   { value: 'Weekend', emoji: '☀️' },
 ] as const
 
-type MoodValue = typeof MOODS[number]['value']
-
 function getMoodEmoji(mood: string): string {
   return MOODS.find(m => m.value === mood)?.emoji || '🎵'
 }
