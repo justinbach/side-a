@@ -37,12 +37,9 @@ Features organized by category with Impact (user value) and Effort (development 
 - **Listening time estimates** — Total hours listened based on track lengths (Impact: Low, Effort: Medium)
 
 ### Social & Activity
-- **Activity feed** — See recent plays across all your collections (Impact: High, Effort: Medium)
 - **Now playing status** — Real-time "currently listening" for collection members (Impact: Medium, Effort: Low)
 - **Comments on albums** — Discussion threads per record in collection (Impact: Medium, Effort: Medium)
 - **Reactions on plays** — Like/heart plays from collection members (Impact: Low, Effort: Low)
-- **Public profiles** — Optional public page with stats and favorite albums (Impact: Medium, Effort: Medium)
-- **Follow users/collections** — Discover and follow collectors outside your collections (Impact: Medium, Effort: High)
 - **Share plays to social** — Post individual plays to Twitter/Instagram (Impact: Low, Effort: Low)
 - **Listening parties** — Synchronized listening sessions with chat (Impact: Low, Effort: High)
 
@@ -100,6 +97,7 @@ Features organized by category with Impact (user value) and Effort (development 
 - **Turntable integration** — Auto-detect plays from smart turntables (Impact: Low, Effort: High)
 
 ## Completed
+- [x] Social activity feed - Follow users, see listening activity, user profiles (PR #TBD)
 - [x] PWA support - home screen installation (PR #24)
 - [x] Mobile layout fixes for collection header (PR #23)
 - [x] Show user names on play history (PR #22)

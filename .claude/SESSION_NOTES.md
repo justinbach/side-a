@@ -8,8 +8,8 @@ This file captures the current state of the project, recent work, and key practi
 
 ## Current State
 
-**Branch:** `feature/pwa-enhancements`
-**Status:** Implementing PWA native affordances (pull-to-refresh, safe areas)
+**Branch:** `feature/social-activity-feed`
+**Status:** Completed social activity feed implementation
 
 ### All Core Features Complete ✅
 - Photo-based album recognition (Claude vision → MusicBrainz)
@@ -207,4 +207,83 @@ None currently.
 ✅ Splash screen (this PR)
 ✅ Install prompt (this PR)
 
-**Branch:** `feature/pwa-navigation-share` (in progress)
+**Branch:** `feature/pwa-navigation-share` (merged as PR #28)
+
+### 2026-02-22: Social Activity Feed Implementation
+**Context:** Users requested a Venmo-style social feed to see what friends are listening to. This expands Side A from shared collections to a broader social network of vinyl collectors.
+
+**Actions:**
+1. **Database Foundation (Phase 1):**
+   - Created migration `20250222000001_add_social_features.sql`
+   - Added `follows` table for one-way follow relationships (Twitter/Instagram style)
+   - Added `share_activity` boolean column to profiles (defaults to true - opt-out privacy)
+   - Extended plays RLS policy to show plays from:
+     - Users you follow (if they have share_activity = true)
+     - Users in your shared collections (if they have share_activity = true)
+   - Indexes on follower_id, following_id for fast lookups
+
+2. **Follow System & Profiles (Phase 2):**
+   - Created server actions: `follow-user.ts`, `update-privacy-settings.ts`
+   - Built `FollowButton` component (matches Play button styling, optimistic UI)
+   - Created user profile pages `/profile/[id]` showing:
+     - Display name, email, member since date
+     - Follow button (hidden on own profile)
+     - Recent play statistics
+     - Activity feed of recent plays
+
+3. **Activity Feed (Phase 3):**
+   - Created `/feed` page as main social hub
+   - Built `FeedCard` component displaying:
+     - User name (links to profile)
+     - Timestamp (relative: "5m ago", "2h ago", etc.)
+     - Mood emoji and tag
+     - Album cover, title, artist
+   - Integrated with existing `PullToRefresh` component
+   - Empty state for users with no activity
+
+4. **Discovery & Privacy (Phase 4):**
+   - Created `/discover` page with two sections:
+     - Email search (debounced, real-time results)
+     - Suggested users from shared collections
+   - Built `UserSearch` component (client-side with debounce)
+   - Built `SuggestedUsers` component (server-side)
+   - Created `/profile/settings` page for privacy controls
+   - Built `ActivityPrivacyToggle` component (iOS-style toggle switch)
+
+5. **Navigation Integration (Phase 5):**
+   - Added feed icon to collection header navigation
+   - Added privacy settings icon to feed page header
+   - All pages have clear "Back to..." navigation
+
+**Key Design Decisions:**
+- **Privacy:** Opt-out model (public by default) - users must explicitly disable sharing
+- **Follow Model:** One-way follows (asymmetric) like Twitter/Instagram, not bidirectional
+- **RLS Strategy:** Multiple policies on plays table work with OR logic - new follow-based visibility doesn't break existing collection-based access
+- **Feed Scope:** Shows followed users + collection members (unified social experience)
+- **Visibility:** Full play details visible even if you don't have access to that collection
+
+**Technical Details:**
+- RLS policies handle all privacy filtering at database level
+- Follows table uses profiles.id (not auth.users.id) for consistency
+- ON DELETE CASCADE ensures cleanup when users delete accounts
+- Unique constraint prevents duplicate follows
+- Check constraint prevents self-follows
+- formatRelativeTime: "5m ago", "2h ago", "3d ago" (matches stats page)
+- Reused MOODS constant and emoji mapping from play-button.tsx
+
+**Files Created:**
+- Migration: `supabase/migrations/20250222000001_add_social_features.sql`
+- Server Actions: `frontend/src/app/actions/follow-user.ts`, `update-privacy-settings.ts`
+- Pages: `feed/page.tsx`, `profile/[id]/page.tsx`, `discover/page.tsx`, `profile/settings/page.tsx`
+- Components: `follow-button.tsx`, `feed-card.tsx`, `feed-list.tsx`, `user-search.tsx`, `suggested-users.tsx`, `activity-privacy-toggle.tsx`
+
+**Files Modified:**
+- `collection-view.tsx` - Added feed icon to header navigation
+- `feed/page.tsx` - Added privacy settings icon
+
+**What's Next:**
+- Testing: Need to test follow/unfollow flow, privacy toggle, RLS policies
+- Future: Consider pagination for feed (currently limited to 50 items)
+- Future: Real-time updates when someone logs a play (WebSocket/Supabase realtime)
+
+**Branch:** `feature/social-activity-feed` (in progress)
