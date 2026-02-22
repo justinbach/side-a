@@ -97,7 +97,7 @@ export function PullToRefresh({ onRefresh, children, className = '' }: PullToRef
     <div ref={containerRef} className={`relative ${className}`}>
       {/* Pull indicator */}
       <div
-        className="absolute top-0 left-0 right-0 flex items-center justify-center transition-opacity duration-200"
+        className="absolute top-0 left-0 right-0 flex items-center justify-center transition-opacity duration-200 pointer-events-none"
         style={{
           height: maxPullDistance,
           transform: `translateY(${pullDistance - maxPullDistance}px)`,
