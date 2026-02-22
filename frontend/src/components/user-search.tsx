@@ -28,35 +28,37 @@ export function UserSearch({ currentUserId }: { currentUserId: string }) {
 
     const delayDebounce = setTimeout(async () => {
       setLoading(true)
-      const supabase = createClient()
+      try {
+        const supabase = createClient()
 
-      // Search for users by email
-      const { data: users } = await supabase
-        .from('profiles')
-        .select('id, display_name, email')
-        .ilike('email', `%${searchTerm}%`)
-        .neq('id', currentUserId) // Exclude current user
-        .limit(10)
+        // Search for users by email
+        const { data: users } = await supabase
+          .from('profiles')
+          .select('id, display_name, email')
+          .ilike('email', `%${searchTerm}%`)
+          .neq('id', currentUserId) // Exclude current user
+          .limit(10)
 
-      if (users) {
-        // Check follow status for each user
-        const { data: follows } = await supabase
-          .from('follows')
-          .select('following_id')
-          .eq('follower_id', currentUserId)
-          .in('following_id', users.map(u => u.id))
+        if (users && users.length > 0) {
+          // Check follow status for each user
+          const { data: follows } = await supabase
+            .from('follows')
+            .select('following_id')
+            .eq('follower_id', currentUserId)
+            .in('following_id', users.map(u => u.id))
 
-        const followingIds = new Set(follows?.map(f => f.following_id) || [])
+          const followingIds = new Set(follows?.map(f => f.following_id) || [])
 
-        const usersWithFollowStatus = users.map(user => ({
-          ...user,
-          isFollowing: followingIds.has(user.id),
-        }))
-
-        setResults(usersWithFollowStatus)
+          setResults(users.map(user => ({
+            ...user,
+            isFollowing: followingIds.has(user.id),
+          })))
+        } else {
+          setResults([])
+        }
+      } finally {
+        setLoading(false)
       }
-
-      setLoading(false)
     }, 300) // 300ms debounce
 
     return () => clearTimeout(delayDebounce)
