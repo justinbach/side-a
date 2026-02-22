@@ -26,9 +26,10 @@ type Play = {
 
 type FeedListProps = {
   plays: Play[]
+  currentUserId?: string
 }
 
-export function FeedList({ plays }: FeedListProps) {
+export function FeedList({ plays, currentUserId }: FeedListProps) {
   if (plays.length === 0) {
     return (
       <div className="bg-warm-white rounded-xl border border-walnut/10 p-12 text-center">
@@ -49,7 +50,7 @@ export function FeedList({ plays }: FeedListProps) {
   return (
     <div className="space-y-3">
       {plays.map((play) => (
-        <FeedCard key={play.id} play={play} />
+        <FeedCard key={play.id} play={play} isOwnPlay={currentUserId ? play.user_id === currentUserId : false} />
       ))}
     </div>
   )

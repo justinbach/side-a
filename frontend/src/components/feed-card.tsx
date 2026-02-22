@@ -50,9 +50,10 @@ type FeedCardProps = {
       collection_id: string
     }[] | null
   }
+  isOwnPlay?: boolean
 }
 
-export function FeedCard({ play }: FeedCardProps) {
+export function FeedCard({ play, isOwnPlay }: FeedCardProps) {
   // Handle Supabase join result (could be object or array)
   const profile = Array.isArray(play.profiles) ? play.profiles[0] : play.profiles
   const record = Array.isArray(play.records) ? play.records[0] : play.records
@@ -62,7 +63,7 @@ export function FeedCard({ play }: FeedCardProps) {
   const displayName = profile.display_name || 'Unknown User'
 
   return (
-    <div className="bg-warm-white rounded-xl border border-walnut/10 p-4 shadow-sm hover:shadow-md transition-shadow">
+    <div className={`rounded-xl border border-walnut/10 p-4 shadow-sm hover:shadow-md transition-shadow ${isOwnPlay ? 'bg-cream border-l-2 border-l-burnt-orange/40' : 'bg-warm-white'}`}>
       <div className="flex items-start gap-4">
         {/* Album Cover */}
         <Link
@@ -91,12 +92,16 @@ export function FeedCard({ play }: FeedCardProps) {
         <div className="flex-1 min-w-0">
           {/* User & Time */}
           <div className="flex flex-wrap items-center gap-x-2 gap-y-1 mb-2 text-sm text-walnut/60">
-            <Link
-              href={`/profile/${profile.id}`}
-              className="font-medium text-walnut hover:text-burnt-orange transition-colors"
-            >
-              {displayName}
-            </Link>
+            {isOwnPlay ? (
+              <span className="font-medium text-walnut">You</span>
+            ) : (
+              <Link
+                href={`/profile/${profile.id}`}
+                className="font-medium text-walnut hover:text-burnt-orange transition-colors"
+              >
+                {displayName}
+              </Link>
+            )}
             <span>·</span>
             <span>{formatRelativeTime(play.played_at)}</span>
             {play.mood && (
