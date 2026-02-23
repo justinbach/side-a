@@ -30,6 +30,7 @@ type RecordRow = {
   title: string
   artist: string
   cover_image_url: string | null
+  moodPlayCount?: number
 }
 
 export default async function PickPage({
@@ -57,11 +58,11 @@ export default async function PickPage({
           <Link href="/collection" className="flex items-center gap-3">
             <Image src="/logo.svg" alt="Side A" width={32} height={32} />
           </Link>
-          <h1 className="font-serif text-2xl font-bold text-walnut">What are we listening to?</h1>
+          <h1 className="font-serif text-2xl font-bold text-walnut">What vibe are we going for?</h1>
         </header>
 
         <div className="max-w-lg mx-auto">
-          <p className="text-walnut/60 mb-8 text-sm">Pick the vibe and we&apos;ll suggest something from your collection.</p>
+          <p className="text-walnut/60 mb-8 text-sm">Pick the mood and we&apos;ll suggest something from your collection.</p>
           <div className="grid grid-cols-2 gap-3">
             {MOODS.map(({ value, emoji }) => {
               const context = encodeURIComponent(MOOD_CONTEXTS[value])
@@ -125,6 +126,7 @@ export default async function PickPage({
     .filter(r => (playCountMap.get(r.id) ?? 0) > 0)
     .sort((a, b) => (playCountMap.get(b.id) ?? 0) - (playCountMap.get(a.id) ?? 0))
     .slice(0, 5)
+    .map(r => ({ ...r, moodPlayCount: playCountMap.get(r.id) ?? 0 }))
 
   // Tier 2 candidates: records with 0 mood-match plays, capped at 30
   const tier2Candidates: RecordRow[] = records
