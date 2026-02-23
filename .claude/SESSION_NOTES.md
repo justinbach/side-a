@@ -287,3 +287,31 @@ None currently.
 - Future: Real-time updates when someone logs a play (WebSocket/Supabase realtime)
 
 **Branch:** `feature/social-activity-feed` (in progress)
+
+### 2026-02-22: MBID, Iconic Cover Recognition & Cross-Collection Stats
+**Context:** Three related improvements to album recognition and the data model.
+
+**Actions:**
+1. **Migration** (`20250222000005_add_mbid_to_records.sql`): Added `mbid TEXT` column + index to `records` table. Enables canonical linking of the same album across collections.
+2. **Iconic cover recognition** (`backend/src/lib/claude.ts`): Updated `extractAlbumInfo` prompt with a two-step approach — read visible text first, then fall back to visual knowledge of iconic album artwork (Dark Side of the Moon prism, Abbey Road zebra crossing, etc.).
+3. **Persist MBID on insert** (`collection/new/page.tsx`): `mbid` written to DB when user accepts a MusicBrainz match. Added `id?: string` to `MusicBrainzMetadata` and `RecognitionResult.metadata` types.
+4. **Manual "Look up on MusicBrainz" button** (`collection/new/page.tsx`): Appears below title+artist fields when both are filled and no scan is active. Calls `/api/lookup`, sets `musicBrainzMatch` + `musicBrainzApproval = pending`. Reuses existing approval card UI.
+5. **Fetch Track List also sets MBID** (`fetch-tracks-button.tsx`): Supabase update now includes `mbid: data.metadata.id ?? null`.
+6. **Backfill action + component**: `backfill-mbid.ts` server action calls `/api/lookup` and writes mbid. `mbid-backfiller.tsx` invisible client component fires on mount for legacy records.
+7. **Cross-collection stats** (`collection/[id]/page.tsx`): When `mbid` is known, two parallel queries count other records + aggregate plays. Renders "Also in X other collections · Y total plays" below artist name.
+
+**Branch:** `feature/play-reactions` (PR #43, open)
+
+### 2026-02-22: "Now Playing" Live Presence
+**Context:** UX shift — tapping Play means "I'm listening right now." A play < 30 min old = active session. No new DB tables needed.
+
+**Actions:**
+1. `play-button.tsx`: "Log without mood" → "Just listening"
+2. `feed-card.tsx`: plays within 30-min window show "Listening now 🎵" via `formatRelativeTime`
+3. `collection/[id]/page.tsx`: Active listener count query + pulsing dot badge ("X people listening now")
+4. `collection/page.tsx`: 5th parallel query for current user's active play; "Now spinning" banner links to record detail
+5. `collection/browse/page.tsx` + `collection-view.tsx`: Same now-spinning banner passed as optional prop to CollectionView
+6. New `now-playing-bar.tsx` component: SSR-seeded, realtime Supabase `postgres_changes` INSERT subscription, deduplicates per user_id, auto-prunes on 60s interval
+7. `feed/page.tsx`: Parallel live query + NowPlayingBar above FeedList
+
+**Branch:** `feature/now-playing-presence` (PR #44, open)

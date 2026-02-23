@@ -143,7 +143,7 @@ export function PlayButton({
             {loggingMood === 'none' && (
               <div className="w-3 h-3 border-2 border-walnut/50 border-t-transparent rounded-full animate-spin" />
             )}
-            Log without mood
+            Just listening
           </button>
         </div>
       )}

@@ -80,6 +80,16 @@ export default async function RecordDetailPage({
     .eq('user_id', user.id)
     .single()
 
+  // Active listener count — plays on this record in last 30 min
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+  const { data: recentListeners } = await supabase
+    .from('plays')
+    .select('user_id')
+    .eq('record_id', id)
+    .gte('played_at', thirtyMinutesAgo)
+
+  const activeListenerCount = new Set(recentListeners?.map(p => p.user_id) ?? []).size
+
   // Cross-collection stats — only when mbid is known
   let otherCollectionCount = 0
   let totalPlaysAcrossCollections = 0
@@ -177,6 +187,16 @@ export default async function RecordDetailPage({
               />
             </div>
             <p className="text-xl text-walnut/70">{record.artist}</p>
+
+            {activeListenerCount > 0 && (
+              <p className="text-sm text-burnt-orange/80 mt-1 flex items-center gap-1.5">
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-burnt-orange opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-burnt-orange" />
+                </span>
+                {activeListenerCount === 1 ? '1 person listening now' : `${activeListenerCount} people listening now`}
+              </p>
+            )}
 
             <div className="mb-8">
               {/* Cross-collection stats */}
