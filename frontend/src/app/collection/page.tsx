@@ -184,14 +184,18 @@ export default async function CollectionPage({
 
           {/* Stat tiles */}
           <div className="flex gap-4">
-            <div className="flex-1 bg-warm-white rounded-xl border border-walnut/10 p-4 text-center">
-              <p className="text-2xl font-bold text-walnut font-serif">{recordCount ?? 0}</p>
-              <p className="text-sm text-walnut/60 mt-1">Records</p>
-            </div>
-            <div className="flex-1 bg-warm-white rounded-xl border border-walnut/10 p-4 text-center">
-              <p className="text-2xl font-bold text-walnut font-serif">{playsThisWeek ?? 0}</p>
-              <p className="text-sm text-walnut/60 mt-1">Plays This Week</p>
-            </div>
+            <Link href={`/collection/browse?c=${collection.id}`} className="flex-1">
+              <div className="bg-warm-white rounded-xl border border-walnut/10 p-4 text-center hover:border-burnt-orange/30 hover:shadow-sm transition-all">
+                <p className="text-2xl font-bold text-walnut font-serif">{recordCount ?? 0}</p>
+                <p className="text-sm text-walnut/60 mt-1">Records</p>
+              </div>
+            </Link>
+            <Link href={`/collection/stats?c=${collection.id}&filter=week`} className="flex-1">
+              <div className="bg-warm-white rounded-xl border border-walnut/10 p-4 text-center hover:border-burnt-orange/30 hover:shadow-sm transition-all">
+                <p className="text-2xl font-bold text-walnut font-serif">{playsThisWeek ?? 0}</p>
+                <p className="text-sm text-walnut/60 mt-1">Plays This Week</p>
+              </div>
+            </Link>
           </div>
           <div className="mt-2 text-right">
             <Link
