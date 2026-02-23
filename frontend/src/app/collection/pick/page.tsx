@@ -61,7 +61,7 @@ export default async function PickPage({
         </header>
 
         <div className="max-w-lg mx-auto">
-          <p className="text-walnut/60 mb-8 text-sm">Pick the vibe and we'll suggest something from your collection.</p>
+          <p className="text-walnut/60 mb-8 text-sm">Pick the vibe and we&apos;ll suggest something from your collection.</p>
           <div className="grid grid-cols-2 gap-3">
             {MOODS.map(({ value, emoji }) => {
               const context = encodeURIComponent(MOOD_CONTEXTS[value])

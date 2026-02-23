@@ -109,7 +109,7 @@ function RecPick({
   )
 }
 
-export function PickResults({ tier1, tier2Candidates, mood, context, collectionId: _collectionId, currentUserId }: Props) {
+export function PickResults({ tier1, tier2Candidates, mood, context, currentUserId }: Props) {
   const [claudeResults, setClaudeResults] = useState<string[] | null>(null)
   const [loadingClaude, setLoadingClaude] = useState(tier2Candidates.length > 0)
   const [loggedPlays, setLoggedPlays] = useState<Set<string>>(new Set())
