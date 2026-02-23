@@ -45,13 +45,21 @@ export default async function RecordDetailPage({
 
   const { data: record } = await supabase
     .from('records')
-    .select('id, title, artist, cover_image_url, metadata, created_at, collection_id, mbid')
+    .select('id, title, artist, cover_image_url, metadata, created_at, collection_id')
     .eq('id', id)
     .single()
 
   if (!record) {
     notFound()
   }
+
+  // Fetch mbid in a separate query so a missing column (unapplied migration)
+  // never causes the main record fetch to fail and 404 the page.
+  const { data: mbidRow } = await supabase
+    .from('records')
+    .select('mbid')
+    .eq('id', id)
+    .single()
 
   // Check if the current user is a member of this record's collection.
   // RLS on collections only returns rows for members, so a null result means
@@ -93,7 +101,7 @@ export default async function RecordDetailPage({
   // Cross-collection stats — only when mbid is known
   let otherCollectionCount = 0
   let totalPlaysAcrossCollections = 0
-  const mbid = (record as { mbid?: string | null }).mbid ?? null
+  const mbid = (mbidRow as { mbid?: string | null } | null)?.mbid ?? null
   if (mbid) {
     const [{ count: otherCount }, { data: siblingRecords }] = await Promise.all([
       supabase
