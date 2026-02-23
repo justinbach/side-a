@@ -315,3 +315,24 @@ None currently.
 7. `feed/page.tsx`: Parallel live query + NowPlayingBar above FeedList
 
 **Branch:** `feature/now-playing-presence` (PR #44, open)
+
+### 2026-02-23: Mood-Based Album Recommendations
+**Context:** "What should we listen to?" — recommend albums from the collection based on mood. One-tap play logging from the recommendation screen.
+
+**Actions:**
+1. `backend/src/lib/claude.ts`: Added `rankAlbumsForContext(context, albums)` — sends a rich context string + album list to Claude, returns ranked IDs (max 8). Backend is context-agnostic; frontend owns the mood→context mapping.
+2. `backend/src/routes/recommend.ts`: New `POST /api/recommend` route. Accepts `{ context: string, albums[] }`. Returns `{ recommendations: string[] }`. Graceful degradation (returns 200 with empty array on Claude errors).
+3. `backend/src/index.ts`: Registered `/api/recommend` route.
+4. `frontend/src/app/collection/pick/page.tsx`: Server component. No mood param → renders 6 mood cards. With mood param → fetches records + plays, computes Tier 1 (history-based) and Tier 2 candidates (unplayed, capped at 30), renders `<PickResults>`.
+5. `frontend/src/components/pick-results.tsx`: Client component. On mount calls backend for Claude rankings. Renders "Your top picks" (Tier 1) and "Try something new" (Tier 2) sections with `RecPick` cards. One-tap play logging — button becomes "✓ Now playing".
+6. `frontend/src/app/collection/page.tsx`: Added "What are we listening to?" 3×2 mood grid above Activity section.
+7. `frontend/src/components/collection-view.tsx`: Added lightbulb icon in header nav linking to `/collection/pick`.
+
+**Key Design Decisions:**
+- Context string (not raw mood enum) sent to Claude — adding free-text vibe input later is purely a frontend change
+- MOOD_CONTEXTS map lives in frontend pick page, not backend
+- Tier 2 candidates capped at 30 to keep Claude prompt manageable; response capped at 8
+- Play logging: direct Supabase client insert (no server action needed)
+- Tier 2 silently absent if Claude unavailable — Tier 1 always shows
+
+**Branch:** `feature/mood-recommendations` (PR #48, open)
