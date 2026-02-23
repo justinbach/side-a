@@ -51,6 +51,17 @@ export default async function BrowsePage({
 
   const isOwner = collection.owner_id === user.id
 
+  // Current user's most recent play in last 30 min (now spinning banner)
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
+  const { data: nowPlaying } = await supabase
+    .from('plays')
+    .select('id, played_at, mood, records(id, title, artist, cover_image_url, collection_id)')
+    .eq('user_id', user.id)
+    .gte('played_at', thirtyMinutesAgo)
+    .order('played_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+
   return (
     <CollectionView
       collection={collection}
@@ -58,6 +69,7 @@ export default async function BrowsePage({
       records={records}
       plays={plays}
       isOwner={isOwner}
+      nowPlaying={nowPlaying}
     />
   )
 }

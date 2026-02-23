@@ -15,6 +15,8 @@ function getMoodEmoji(mood: string): string {
   return MOODS.find(m => m.value === mood)?.emoji || '🎵'
 }
 
+const LIVE_WINDOW_MS = 30 * 60 * 1000
+
 function formatRelativeTime(dateStr: string) {
   const date = new Date(dateStr)
   const now = new Date()
@@ -23,7 +25,7 @@ function formatRelativeTime(dateStr: string) {
   const diffHours = Math.floor(diffMs / 3600000)
   const diffDays = Math.floor(diffMs / 86400000)
 
-  if (diffMins < 1) return 'just now'
+  if (diffMs < LIVE_WINDOW_MS) return 'Listening now 🎵'
   if (diffMins < 60) return `${diffMins}m ago`
   if (diffHours < 24) return `${diffHours}h ago`
   if (diffDays < 7) return `${diffDays}d ago`

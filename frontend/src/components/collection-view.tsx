@@ -7,6 +7,21 @@ import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
 import { RecordGrid } from './record-grid'
 
+type NowPlayingRecord = {
+  id: string
+  title: string
+  artist: string
+  cover_image_url: string | null
+  collection_id: string
+}
+
+type NowPlayingPlay = {
+  id: string
+  played_at: string
+  mood: string | null
+  records: NowPlayingRecord | NowPlayingRecord[] | null
+}
+
 
 type Collection = {
   id: string
@@ -45,12 +60,14 @@ export function CollectionView({
   records,
   plays,
   isOwner,
+  nowPlaying,
 }: {
   collection: Collection
   allCollections: Collection[]
   records: Record[] | null
   plays: Play[] | null
   isOwner: boolean
+  nowPlaying?: NowPlayingPlay | null
 }) {
   const router = useRouter()
   const [search, setSearch] = useState('')
@@ -224,6 +241,28 @@ export function CollectionView({
             ← Home
           </Link>
         </div>
+
+        {/* Now Spinning banner — current user's active play */}
+        {(() => {
+          const nowPlayingRecord = nowPlaying
+            ? (Array.isArray(nowPlaying.records) ? nowPlaying.records[0] : nowPlaying.records)
+            : null
+          return nowPlaying && nowPlayingRecord ? (
+            <Link href={`/collection/${nowPlayingRecord.id}?c=${nowPlayingRecord.collection_id}`} className="block mb-6">
+              <div className="flex items-center gap-3 bg-warm-white border border-burnt-orange/20 rounded-xl px-4 py-3">
+                <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-burnt-orange opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-burnt-orange" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-walnut truncate">{nowPlayingRecord.title}</p>
+                  <p className="text-xs text-walnut/60 truncate">{nowPlayingRecord.artist}</p>
+                </div>
+                <span className="text-xs text-walnut/40 flex-shrink-0">Now spinning →</span>
+              </div>
+            </Link>
+          ) : null
+        })()}
 
         {/* Search, Sort, Filter Controls */}
         {records && records.length > 0 && (

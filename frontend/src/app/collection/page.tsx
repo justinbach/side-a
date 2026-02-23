@@ -79,13 +79,15 @@ export default async function CollectionPage({
     : collections[0]
 
   const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()
+  const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
 
-  // Four parallel dashboard queries
+  // Five parallel dashboard queries
   const [
     { data: recentRecords },
     { count: recordCount },
     { count: playsThisWeek },
     { data: feedPlays },
+    { data: nowPlaying },
   ] = await Promise.all([
     // 4 most recently added records for preview
     supabase
@@ -119,6 +121,15 @@ export default async function CollectionPage({
       `)
       .order('played_at', { ascending: false })
       .limit(20),
+    // Current user's most recent play in last 30 min (now spinning)
+    supabase
+      .from('plays')
+      .select('id, played_at, mood, records(id, title, artist, cover_image_url, collection_id)')
+      .eq('user_id', user.id)
+      .gte('played_at', thirtyMinutesAgo)
+      .order('played_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
   ])
 
   const isOwner = collection.owner_id === user.id
@@ -135,6 +146,28 @@ export default async function CollectionPage({
       </header>
 
       <div className="max-w-3xl mx-auto space-y-10">
+        {/* Now Spinning banner — current user's active play */}
+        {(() => {
+          const nowPlayingRecord = nowPlaying
+            ? (Array.isArray(nowPlaying.records) ? nowPlaying.records[0] : nowPlaying.records)
+            : null
+          return nowPlaying && nowPlayingRecord ? (
+            <Link href={`/collection/${nowPlayingRecord.id}?c=${nowPlayingRecord.collection_id}`}>
+              <div className="flex items-center gap-3 bg-warm-white border border-burnt-orange/20 rounded-xl px-4 py-3">
+                <span className="relative flex h-2.5 w-2.5 flex-shrink-0">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-burnt-orange opacity-75" />
+                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-burnt-orange" />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-walnut truncate">{nowPlayingRecord.title}</p>
+                  <p className="text-xs text-walnut/60 truncate">{nowPlayingRecord.artist}</p>
+                </div>
+                <span className="text-xs text-walnut/40 flex-shrink-0">Now spinning →</span>
+              </div>
+            </Link>
+          ) : null
+        })()}
+
         {/* Collection identity + stats */}
         <section>
           {/* Collection name / dropdown */}
