@@ -33,10 +33,13 @@ function formatRelativeTime(dateStr: string) {
 
 export default async function ProfilePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>
+  searchParams: Promise<{ filter?: string }>
 }) {
   const { id: profileId } = await params
+  const { filter = 'all' } = await searchParams
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
 
@@ -71,7 +74,7 @@ export default async function ProfilePage({
   }
 
   // Fetch recent plays (RLS will handle privacy)
-  const { data: recentPlays } = await supabase
+  const { data: allPlays } = await supabase
     .from('plays')
     .select(`
       id,
@@ -81,13 +84,18 @@ export default async function ProfilePage({
     `)
     .eq('user_id', profileId)
     .order('played_at', { ascending: false })
-    .limit(20)
+    .limit(50)
 
   // Calculate basic stats
-  const totalPlays = recentPlays?.length || 0
   const now = new Date()
   const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000)
-  const playsThisWeek = recentPlays?.filter(p => new Date(p.played_at) >= weekAgo).length || 0
+  const totalPlays = allPlays?.length || 0
+  const playsThisWeek = allPlays?.filter(p => new Date(p.played_at) >= weekAgo).length || 0
+
+  // Filter activity list based on selected period
+  const recentPlays = filter === 'week'
+    ? allPlays?.filter(p => new Date(p.played_at) >= weekAgo) ?? []
+    : allPlays ?? []
 
   return (
     <main className="min-h-screen p-8">
@@ -119,22 +127,30 @@ export default async function ProfilePage({
             )}
           </div>
 
-          {/* Stats Summary */}
+          {/* Stats Summary — tiles filter the activity list below */}
           <div className="grid grid-cols-2 gap-4">
-            <div className="text-center p-4 bg-tan/30 rounded-lg">
+            <Link
+              href={`/profile/${profileId}`}
+              className={`text-center p-4 rounded-lg transition-all ${filter === 'all' ? 'bg-burnt-orange/10 ring-2 ring-burnt-orange/30' : 'bg-tan/30 hover:bg-tan/50'}`}
+            >
               <p className="text-3xl font-serif text-walnut">{totalPlays}</p>
               <p className="text-sm text-walnut/60">Recent Plays</p>
-            </div>
-            <div className="text-center p-4 bg-tan/30 rounded-lg">
+            </Link>
+            <Link
+              href={`/profile/${profileId}?filter=week`}
+              className={`text-center p-4 rounded-lg transition-all ${filter === 'week' ? 'bg-burnt-orange/10 ring-2 ring-burnt-orange/30' : 'bg-tan/30 hover:bg-tan/50'}`}
+            >
               <p className="text-3xl font-serif text-walnut">{playsThisWeek}</p>
               <p className="text-sm text-walnut/60">This Week</p>
-            </div>
+            </Link>
           </div>
         </div>
 
         {/* Recent Activity */}
         <div>
-          <h2 className="font-serif text-xl text-walnut mb-4">Recent Activity</h2>
+          <h2 className="font-serif text-xl text-walnut mb-4">
+            {filter === 'week' ? 'Activity This Week' : 'Recent Activity'}
+          </h2>
           {!recentPlays || recentPlays.length === 0 ? (
             <div className="bg-warm-white rounded-xl border border-walnut/10 p-8 text-center">
               <p className="text-walnut/60">
