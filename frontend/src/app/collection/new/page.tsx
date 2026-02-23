@@ -30,6 +30,7 @@ type RecognitionResult = {
     confidence: 'high' | 'medium' | 'low'
   }
   metadata: {
+    id?: string
     title: string
     artist: string
     coverArtUrl: string | null
@@ -50,6 +51,7 @@ type RecognitionState =
   | { status: 'error'; message: string }
 
 type MusicBrainzMetadata = {
+  id?: string
   title: string
   artist: string
   coverArtUrl: string | null
@@ -196,6 +198,35 @@ function NewRecordContent() {
     // Keep current form values and user's photo
   }
 
+  // Manual lookup — triggered when user types title+artist and clicks "Look up on MusicBrainz"
+  const handleManualLookup = async () => {
+    setMusicBrainzMatch(null)
+    setMusicBrainzApproval({ status: 'pending' })
+    setRecognition({ status: 'searching' })
+
+    try {
+      const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:3001'
+      const response = await fetch(`${backendUrl}/api/lookup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title, artist }),
+      })
+
+      const data = await response.json()
+
+      if (data.success && data.metadata) {
+        setMusicBrainzMatch(data.metadata)
+        setRecognition({ status: 'success', result: { success: true, extraction: { title, artist, confidence: 'high' }, metadata: data.metadata } })
+      } else {
+        setMusicBrainzApproval({ status: 'none' })
+        setRecognition({ status: 'idle' })
+      }
+    } catch {
+      setMusicBrainzApproval({ status: 'none' })
+      setRecognition({ status: 'idle' })
+    }
+  }
+
   // Helper to convert data URL to Blob
   const dataUrlToBlob = (dataUrl: string): Blob => {
     const [header, base64] = dataUrl.split(',')
@@ -285,6 +316,11 @@ function NewRecordContent() {
       if (tracks && tracks.length > 0) metadata.tracks = tracks
     }
 
+    // Capture mbid if MusicBrainz was accepted
+    const mbid = musicBrainzApproval.status === 'accepted' && musicBrainzMatch?.id
+      ? musicBrainzMatch.id
+      : null
+
     // Create the record
     const { error: insertError } = await supabase
       .from('records')
@@ -294,6 +330,7 @@ function NewRecordContent() {
         artist,
         cover_image_url: coverImageUrl,
         metadata: Object.keys(metadata).length > 0 ? metadata : {},
+        mbid,
       })
 
     if (insertError) {
@@ -690,6 +727,22 @@ function NewRecordContent() {
               placeholder="e.g., The Beatles"
             />
           </div>
+
+          {/* Manual MusicBrainz lookup — shown when title+artist are filled, no scan is active, and no approval pending */}
+          {title.trim() && artist.trim() && !isRecognizing && musicBrainzApproval.status === 'none' && recognition.status !== 'searching' && (
+            <div>
+              <button
+                type="button"
+                onClick={handleManualLookup}
+                className="flex items-center gap-2 text-sm text-burnt-orange hover:underline"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                Look up on MusicBrainz
+              </button>
+            </div>
+          )}
 
           {error && (
             <p className="text-sm text-red-600 bg-red-50 p-3 rounded-lg">

@@ -10,6 +10,7 @@ import { ClearTracksButton } from '@/components/clear-tracks-button'
 import { ReprocessImageButton } from '@/components/reprocess-image-button'
 import { ReplaceImageButton } from '@/components/replace-image-button'
 import { ShareButton } from '@/components/share-button'
+import { MbidBackfiller } from '@/components/mbid-backfiller'
 
 type Track = {
   position: number
@@ -44,7 +45,7 @@ export default async function RecordDetailPage({
 
   const { data: record } = await supabase
     .from('records')
-    .select('id, title, artist, cover_image_url, metadata, created_at, collection_id')
+    .select('id, title, artist, cover_image_url, metadata, created_at, collection_id, mbid')
     .eq('id', id)
     .single()
 
@@ -78,6 +79,35 @@ export default async function RecordDetailPage({
     .eq('record_id', id)
     .eq('user_id', user.id)
     .single()
+
+  // Cross-collection stats — only when mbid is known
+  let otherCollectionCount = 0
+  let totalPlaysAcrossCollections = 0
+  const mbid = (record as { mbid?: string | null }).mbid ?? null
+  if (mbid) {
+    const [{ count: otherCount }, { data: siblingRecords }] = await Promise.all([
+      supabase
+        .from('records')
+        .select('id', { count: 'exact', head: true })
+        .eq('mbid', mbid)
+        .neq('id', record.id),
+      supabase
+        .from('records')
+        .select('id')
+        .eq('mbid', mbid),
+    ])
+
+    otherCollectionCount = otherCount ?? 0
+
+    if (siblingRecords && siblingRecords.length > 0) {
+      const siblingIds = siblingRecords.map((r) => r.id)
+      const { count: playsCount } = await supabase
+        .from('plays')
+        .select('id', { count: 'exact', head: true })
+        .in('record_id', siblingIds)
+      totalPlaysAcrossCollections = playsCount ?? 0
+    }
+  }
 
   return (
     <main className="min-h-screen p-8">
@@ -146,7 +176,23 @@ export default async function RecordDetailPage({
                 iconOnly
               />
             </div>
-            <p className="text-xl text-walnut/70 mb-8">{record.artist}</p>
+            <p className="text-xl text-walnut/70">{record.artist}</p>
+
+            <div className="mb-8">
+              {/* Cross-collection stats */}
+              {(otherCollectionCount > 0 || totalPlaysAcrossCollections > 0) && (
+                <p className="text-sm text-walnut/40 mt-1">
+                  {otherCollectionCount > 0 && `Also in ${otherCollectionCount} other collection${otherCollectionCount !== 1 ? 's' : ''}`}
+                  {otherCollectionCount > 0 && totalPlaysAcrossCollections > 0 && ' · '}
+                  {totalPlaysAcrossCollections > 0 && `${totalPlaysAcrossCollections} total play${totalPlaysAcrossCollections !== 1 ? 's' : ''}`}
+                </p>
+              )}
+
+              {/* Silent mbid backfill for existing records without an mbid */}
+              {!mbid && isMember && (
+                <MbidBackfiller recordId={record.id} title={record.title} artist={record.artist} />
+              )}
+            </div>
 
             {/* Play Button with mood picker and history */}
             <div className="mb-8">

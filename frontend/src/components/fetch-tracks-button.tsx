@@ -13,6 +13,7 @@ type Track = {
 type LookupResponse = {
   success: boolean
   metadata: {
+    id?: string
     releaseDate: string | null
     label: string | null
     tracks: Track[]
@@ -66,6 +67,7 @@ export function FetchTracksButton({
             label: data.metadata.label,
             tracks: data.metadata.tracks,
           },
+          mbid: data.metadata.id ?? null,
         })
         .eq('id', recordId)
 
