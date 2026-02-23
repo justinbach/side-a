@@ -89,6 +89,43 @@ Rules:
   }
 }
 
+export async function rankAlbumsForContext(
+  context: string,
+  albums: { id: string; title: string; artist: string }[]
+): Promise<string[]> {
+  if (albums.length === 0) return []
+
+  const albumList = albums
+    .map((a, i) => `${i + 1}. ID: ${a.id} | "${a.title}" by ${a.artist}`)
+    .join('\n')
+
+  const response = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 512,
+    system:
+      'You are a music recommender helping a vinyl collector choose what to listen to next. ' +
+      'Given a listening context and a list of albums, pick and rank the best fits. ' +
+      'Respond ONLY with a valid JSON array of album IDs (strings) in ranked order, no other text.',
+    messages: [
+      {
+        role: 'user',
+        content: `Listening context: ${context}\n\nAlbums to choose from:\n${albumList}\n\nReturn a JSON array of up to 8 album IDs, best fit first. Example: ["id1","id2","id3"]`,
+      },
+    ],
+  })
+
+  const textContent = response.content.find((c) => c.type === 'text')
+  if (!textContent || textContent.type !== 'text') return []
+
+  try {
+    const parsed = JSON.parse(textContent.text)
+    if (!Array.isArray(parsed)) return []
+    return parsed.filter((id): id is string => typeof id === 'string').slice(0, 8)
+  } catch {
+    return []
+  }
+}
+
 export async function analyzeAlbumBounds(imageBase64: string, mimeType: string): Promise<AlbumBoundsAnalysis> {
   const response = await anthropic.messages.create({
     model: 'claude-sonnet-4-20250514',

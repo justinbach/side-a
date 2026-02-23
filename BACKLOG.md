@@ -73,7 +73,8 @@ Features organized by category with Impact (user value) and Effort (development 
 - **API for third-party integrations** — Public API for custom tools (Impact: Low, Effort: High)
 
 ### Discovery & Recommendations
-- **Album recommendations** — Suggest new albums based on collection and plays (Impact: High, Effort: High)
+- [x] **Mood-based recommendations** — "What are we listening to?" — two-tier picks from collection history + Claude AI (PR #48)
+- **Album recommendations** — Suggest new albums *outside* the collection based on history (Impact: High, Effort: High)
 - **Similar albums** — Find records similar to ones you own (Impact: Medium, Effort: High)
 - **New release alerts** — Notifications for artists in your collection (Impact: Medium, Effort: Medium)
 - **Trending in community** — See popular albums across all Side A users (Impact: Low, Effort: Medium)
