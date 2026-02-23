@@ -23,7 +23,8 @@ export default async function FeedPage() {
       mood,
       user_id,
       profiles(id, display_name),
-      records(id, title, artist, cover_image_url, collection_id)
+      records(id, title, artist, cover_image_url, collection_id),
+      play_reactions(id, user_id, emoji)
     `)
     .neq('user_id', user.id) // Exclude own plays
     .order('played_at', { ascending: false })
@@ -61,7 +62,7 @@ export default async function FeedPage() {
         </div>
 
         {/* Feed */}
-        <FeedList plays={feedPlays || []} />
+        <FeedList plays={feedPlays || []} currentUserId={user.id} />
 
         {/* Bottom Navigation Hint */}
         <div className="mt-8 text-center">

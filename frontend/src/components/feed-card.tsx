@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import Image from 'next/image'
+import { ReactionBar } from './reaction-bar'
 
 const MOODS = [
   { value: 'Morning', emoji: '🌅' },
@@ -29,6 +30,8 @@ function formatRelativeTime(dateStr: string) {
   return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
 }
 
+type Reaction = { id: string; user_id: string; emoji: string }
+
 type FeedCardProps = {
   play: {
     id: string
@@ -49,11 +52,13 @@ type FeedCardProps = {
       cover_image_url: string | null
       collection_id: string
     }[] | null
+    play_reactions?: Reaction[] | null
   }
   isOwnPlay?: boolean
+  currentUserId?: string
 }
 
-export function FeedCard({ play, isOwnPlay }: FeedCardProps) {
+export function FeedCard({ play, isOwnPlay, currentUserId }: FeedCardProps) {
   // Handle Supabase join result (could be object or array)
   const profile = Array.isArray(play.profiles) ? play.profiles[0] : play.profiles
   const record = Array.isArray(play.records) ? play.records[0] : play.records
@@ -61,6 +66,7 @@ export function FeedCard({ play, isOwnPlay }: FeedCardProps) {
   if (!profile || !record) return null
 
   const displayName = profile.display_name || 'Unknown User'
+  const reactions = play.play_reactions ?? []
 
   return (
     <div className={`rounded-xl border border-walnut/10 p-4 shadow-sm hover:shadow-md transition-shadow ${isOwnPlay ? 'bg-cream border-l-2 border-l-burnt-orange/40' : 'bg-warm-white'}`}>
@@ -125,6 +131,15 @@ export function FeedCard({ play, isOwnPlay }: FeedCardProps) {
             </p>
             <p className="text-sm text-walnut/60 truncate">{record.artist}</p>
           </Link>
+
+          {/* Reactions */}
+          {currentUserId && (
+            <ReactionBar
+              playId={play.id}
+              initialReactions={reactions}
+              currentUserId={currentUserId}
+            />
+          )}
         </div>
       </div>
     </div>
