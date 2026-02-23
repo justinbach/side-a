@@ -49,6 +49,10 @@ export async function extractAlbumInfo(imageBase64: string, mimeType: string): P
             type: 'text',
             text: `You are analyzing an image of a vinyl record album cover or label. Extract the album title and artist name.
 
+Step 1: Read any visible text on the cover — title and artist name are usually printed prominently.
+
+Step 2: If the cover has little or no readable text, use your visual knowledge of iconic album artwork to identify the album. For example: a prism refracting a rainbow on a black background is "The Dark Side of the Moon" by Pink Floyd; people on a zebra crossing is "Abbey Road" by The Beatles; a banana is "The Velvet Underground & Nico" by The Velvet Underground; and so on. Apply the same reasoning to any iconic artwork you recognise.
+
 Respond ONLY with a JSON object in this exact format:
 {
   "title": "Album Title Here",
@@ -57,7 +61,7 @@ Respond ONLY with a JSON object in this exact format:
 }
 
 Rules:
-- If you can clearly read both title and artist, set confidence to "high"
+- If you can clearly read both title and artist (or confidently identify iconic artwork), set confidence to "high"
 - If you can mostly determine them but aren't 100% sure, set confidence to "medium"
 - If you're guessing or the image is unclear, set confidence to "low"
 - If you cannot determine a field at all, set it to null
