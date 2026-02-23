@@ -8,6 +8,15 @@ import { FeedList } from '@/components/feed-list'
 import { SignOutButton } from '@/components/sign-out-button'
 import { DashboardCollectionSwitcher } from '@/components/dashboard-collection-switcher'
 
+const MOODS = [
+  { value: 'Morning', emoji: '🌅' },
+  { value: 'Cocktail Hour', emoji: '🍸' },
+  { value: 'Dinner', emoji: '🍽️' },
+  { value: 'Late Night', emoji: '🌙' },
+  { value: 'Background', emoji: '🎧' },
+  { value: 'Weekend', emoji: '☀️' },
+] as const
+
 export default async function CollectionPage({
   searchParams,
 }: {
@@ -229,6 +238,23 @@ export default async function CollectionPage({
             totalCount={recordCount ?? 0}
             collectionId={collection.id}
           />
+        </section>
+
+        {/* What are we listening to? — mood quick-pick */}
+        <section>
+          <h3 className="font-serif text-lg font-semibold text-walnut mb-3">What are we listening to?</h3>
+          <div className="grid grid-cols-3 gap-2">
+            {MOODS.map(({ value, emoji }) => (
+              <Link
+                key={value}
+                href={`/collection/pick?c=${collection.id}&mood=${encodeURIComponent(value)}`}
+                className="flex flex-col items-center gap-1 p-3 bg-warm-white rounded-xl border border-walnut/10 hover:border-burnt-orange/30 hover:shadow-sm transition-all"
+              >
+                <span className="text-2xl">{emoji}</span>
+                <span className="text-xs text-walnut/70 text-center leading-tight">{value}</span>
+              </Link>
+            ))}
+          </div>
         </section>
 
         {/* Activity Feed */}
