@@ -185,7 +185,7 @@ export function PlayButton({
                   {isMember && isOwnPlay(play) && (
                     <button
                       onClick={() => handleDelete(play.id)}
-                      className="flex-shrink-0 text-walnut/20 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100 p-0.5"
+                      className="flex-shrink-0 text-walnut/20 hover:text-red-400 transition-colors opacity-30 group-hover:opacity-100 focus:opacity-100 p-0.5"
                       title="Delete play"
                       aria-label="Delete play"
                     >

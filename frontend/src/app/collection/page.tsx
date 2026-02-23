@@ -114,7 +114,8 @@ export default async function CollectionPage({
         mood,
         user_id,
         profiles(id, display_name),
-        records(id, title, artist, cover_image_url, collection_id)
+        records(id, title, artist, cover_image_url, collection_id),
+        play_reactions(id, user_id, emoji)
       `)
       .order('played_at', { ascending: false })
       .limit(20),

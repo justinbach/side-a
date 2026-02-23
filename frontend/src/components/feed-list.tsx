@@ -22,6 +22,7 @@ type Play = {
     cover_image_url: string | null
     collection_id: string
   }[] | null
+  play_reactions?: { id: string; user_id: string; emoji: string }[] | null
 }
 
 type FeedListProps = {
@@ -50,7 +51,7 @@ export function FeedList({ plays, currentUserId }: FeedListProps) {
   return (
     <div className="space-y-3">
       {plays.map((play) => (
-        <FeedCard key={play.id} play={play} isOwnPlay={currentUserId ? play.user_id === currentUserId : false} />
+        <FeedCard key={play.id} play={play} isOwnPlay={currentUserId ? play.user_id === currentUserId : false} currentUserId={currentUserId} />
       ))}
     </div>
   )
