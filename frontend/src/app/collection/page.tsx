@@ -240,9 +240,9 @@ export default async function CollectionPage({
           />
         </section>
 
-        {/* What are we listening to? — mood quick-pick */}
+        {/* What vibe are we going for? — mood quick-pick */}
         <section>
-          <h3 className="font-serif text-lg font-semibold text-walnut mb-3">What are we listening to?</h3>
+          <h3 className="font-serif text-lg font-semibold text-walnut mb-3">What vibe are we going for?</h3>
           <div className="grid grid-cols-3 gap-2">
             {MOODS.map(({ value, emoji }) => (
               <Link

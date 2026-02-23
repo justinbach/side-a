@@ -9,6 +9,7 @@ type Album = {
   title: string
   artist: string
   cover_image_url: string | null
+  moodPlayCount?: number
 }
 
 type Props = {
@@ -75,10 +76,15 @@ function RecPick({
         )}
       </div>
 
-      {/* Title + Artist */}
+      {/* Title + Artist + optional play count */}
       <div className="flex-1 min-w-0">
         <p className="text-sm font-medium text-walnut truncate">{album.title}</p>
         <p className="text-xs text-walnut/60 truncate">{album.artist}</p>
+        {album.moodPlayCount !== undefined && (
+          <p className="text-xs text-burnt-orange/70 mt-0.5">
+            played {album.moodPlayCount}× this mood
+          </p>
+        )}
       </div>
 
       {/* Play button */}
@@ -123,6 +129,7 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
     const backendUrl = process.env.NEXT_PUBLIC_BACKEND_URL
     if (!backendUrl) {
       setLoadingClaude(false)
+      setClaudeResults([])
       return
     }
 
@@ -150,12 +157,15 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
     setLoggedPlays(prev => new Set([...prev, id]))
   }
 
-  // Build Tier 2 ordered list from Claude's ranked IDs
-  const tier2Albums: Album[] = claudeResults
-    ? claudeResults
-        .map(id => tier2Candidates.find(a => a.id === id))
-        .filter((a): a is Album => !!a)
-    : []
+  // Build Tier 2 list from Claude's ranked IDs.
+  // Fall back to tier2Candidates in their original order if Claude returned nothing useful.
+  const tier2Albums: Album[] = (() => {
+    if (claudeResults === null) return [] // still loading
+    const ranked = claudeResults
+      .map(id => tier2Candidates.find(a => a.id === id))
+      .filter((a): a is Album => !!a)
+    return ranked.length > 0 ? ranked : tier2Candidates.slice(0, 8)
+  })()
 
   const hasTier1 = tier1.length > 0
   const hasTier2 = tier2Albums.length > 0
@@ -186,7 +196,7 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
         </section>
       )}
 
-      {/* Tier 2 — Claude discovery picks */}
+      {/* Tier 2 — Claude discovery picks (with fallback to unranked candidates) */}
       {tier2Candidates.length > 0 && (
         <section>
           <div className="flex items-center gap-2 mb-3">
@@ -215,7 +225,7 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
         </section>
       )}
 
-      {/* Edge case: nothing to show at all yet */}
+      {/* Edge case: nothing to show at all */}
       {!hasTier1 && !loadingClaude && !hasTier2 && (
         <p className="text-walnut/50 text-sm">No suggestions available right now.</p>
       )}
