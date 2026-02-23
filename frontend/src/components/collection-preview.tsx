@@ -32,14 +32,17 @@ export function CollectionPreview({ records, totalCount, collectionId }: Collect
     )
   }
 
+  const showOverflow = totalCount > 4
+  const colCount = showOverflow ? 5 : previewRecords.length || 4
+
   return (
     <div className="bg-warm-white rounded-xl border border-walnut/10 p-4">
-      <div className="flex items-center gap-3 mb-4">
+      <div className={`grid gap-3 mb-4`} style={{ gridTemplateColumns: `repeat(${colCount}, minmax(0, 1fr))` }}>
         {previewRecords.map((record) => (
           <Link
             key={record.id}
             href={`/collection/${record.id}?c=${collectionId}`}
-            className="flex-shrink-0"
+            className="block aspect-square"
           >
             {record.cover_image_url ? (
               <Image
@@ -47,10 +50,10 @@ export function CollectionPreview({ records, totalCount, collectionId }: Collect
                 alt={record.title}
                 width={72}
                 height={72}
-                className="w-18 h-18 rounded object-cover hover:opacity-90 transition-opacity"
+                className="w-full h-full rounded object-cover hover:opacity-90 transition-opacity"
               />
             ) : (
-              <div className="w-18 h-18 rounded bg-tan flex items-center justify-center" style={{ width: 72, height: 72 }}>
+              <div className="w-full h-full rounded bg-tan flex items-center justify-center">
                 <svg className="w-7 h-7 text-walnut/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
                   <circle cx="12" cy="12" r="3" strokeWidth="1.5" />
@@ -59,8 +62,8 @@ export function CollectionPreview({ records, totalCount, collectionId }: Collect
             )}
           </Link>
         ))}
-        {totalCount > 4 && (
-          <div className="w-18 h-18 rounded bg-tan flex items-center justify-center flex-shrink-0" style={{ width: 72, height: 72 }}>
+        {showOverflow && (
+          <div className="aspect-square rounded bg-tan flex items-center justify-center">
             <span className="text-sm font-medium text-walnut/60">+{totalCount - 4}</span>
           </div>
         )}
