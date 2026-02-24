@@ -301,14 +301,19 @@ function NewRecordContent() {
 
     let coverImageUrl: string | null = coverPreview?.startsWith('http') ? coverPreview : null
 
+    // If the user accepted the MusicBrainz cover art, use it directly — skip all local uploads
+    const usingMusicBrainzCover =
+      musicBrainzApproval.status === 'accepted' && musicBrainzApproval.useMusicBrainzCover
+
     // Determine which image to upload - prioritize processed image if available
     const imageToUpload = useProcessedImage && processedImageDataUrl
       ? processedImageDataUrl
       : originalImageDataUrl
 
     // Upload cover image - check for data URL first (processed/original from recognition)
-    // then fall back to file upload (manual selection)
-    if (imageToUpload && imageToUpload.startsWith('data:')) {
+    // then fall back to file upload (manual selection).
+    // Skip entirely when the MusicBrainz cover URL is already in coverImageUrl.
+    if (!usingMusicBrainzCover && imageToUpload && imageToUpload.startsWith('data:')) {
       // Upload processed or original image from data URL
       const blob = dataUrlToBlob(imageToUpload)
       const fileName = `${crypto.randomUUID()}.jpg`
@@ -330,7 +335,7 @@ function NewRecordContent() {
         .getPublicUrl(filePath)
 
       coverImageUrl = publicUrl
-    } else if (coverFile) {
+    } else if (!usingMusicBrainzCover && coverFile) {
       // Fallback to original file (manual upload without recognition)
       const fileExt = coverFile.name.split('.').pop()
       const fileName = `${crypto.randomUUID()}.${fileExt}`
