@@ -158,22 +158,26 @@ export default async function ProfilePage({
           </div>
         </div>
 
-        {/* Wish List — shown if non-empty */}
-        {wishListItems && wishListItems.length > 0 && (
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="font-serif text-xl text-walnut flex items-center gap-2">
-                Wish List
-                <svg className="w-5 h-5 text-burnt-orange/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
-                </svg>
-              </h2>
-              {isOwnProfile && (
-                <a href="/wishlist" className="text-sm text-burnt-orange hover:text-burnt-orange/80 transition-colors">
-                  Manage →
-                </a>
-              )}
-            </div>
+        {/* Wish List */}
+        <div className="mb-8">
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="font-serif text-xl text-walnut flex items-center gap-2">
+              Wish List
+              <svg className="w-5 h-5 text-burnt-orange/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
+              </svg>
+            </h2>
+            {isOwnProfile && (
+              <Link href="/wishlist" className="text-sm text-burnt-orange hover:text-burnt-orange/80 transition-colors">
+                Manage →
+              </Link>
+            )}
+          </div>
+          {!wishListItems || wishListItems.length === 0 ? (
+            <p className="text-sm text-walnut/40 px-1">
+              {isOwnProfile ? 'Your wish list is empty.' : 'No wish list items yet.'}
+            </p>
+          ) : (
             <div className="space-y-2">
               {wishListItems.map((item) => {
                 const year = item.release_date ? item.release_date.split('-')[0] : null
@@ -186,6 +190,7 @@ export default async function ProfilePage({
                         width={40}
                         height={40}
                         className="w-10 h-10 rounded object-cover flex-shrink-0"
+                        unoptimized
                       />
                     ) : (
                       <div className="w-10 h-10 rounded bg-tan flex items-center justify-center flex-shrink-0">
@@ -205,8 +210,8 @@ export default async function ProfilePage({
                 )
               })}
             </div>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Recent Activity */}
         <div>
