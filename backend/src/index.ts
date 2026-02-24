@@ -5,6 +5,7 @@ import recognizeRouter from './routes/recognize'
 import lookupRouter from './routes/lookup'
 import preprocessRouter from './routes/preprocess'
 import recommendRouter from './routes/recommend'
+import catalogSearchRouter from './routes/catalog-search'
 
 const app = express()
 const PORT = process.env.PORT || 3001
@@ -21,6 +22,7 @@ app.use('/api/recognize', recognizeRouter)
 app.use('/api/lookup', lookupRouter)
 app.use('/api/preprocess', preprocessRouter)
 app.use('/api/recommend', recommendRouter)
+app.use('/api/catalog-search', catalogSearchRouter)
 
 // Health check endpoint
 app.get('/health', (_req, res) => {

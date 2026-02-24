@@ -1,6 +1,6 @@
 # Session Notes
 
-**Last Updated:** 2026-02-08
+**Last Updated:** 2026-02-23
 
 This file captures the current state of the project, recent work, and key practices. Update this regularly to maintain context between Claude Code sessions.
 
@@ -336,3 +336,30 @@ None currently.
 - Tier 2 silently absent if Claude unavailable — Tier 1 always shows
 
 **Branch:** `feature/mood-recommendations` (PR #48, open)
+
+### 2026-02-23: Wish List + MusicBrainz Catalog Search
+**Context:** Users want to track albums they want to acquire, and the existing MusicBrainz integration returned only a single best-guess match. Both features share a common catalog search UI.
+
+**Architecture:**
+- Per-user wish list (not per-collection) — `wish_list_items` table with RLS
+- Reusable `AlbumSearch` component used in both wish list and add-record flows
+- Backend: two new catalog-search endpoints on `/api/catalog-search`
+
+**Actions:**
+1. DB migration `20260223000001_add_wish_list.sql`: `wish_list_items` table with UNIQUE(user_id, mbid), RLS policies (read: all authenticated; insert/delete: owner only)
+2. `backend/src/lib/musicbrainz.ts`: Added `MusicBrainzSearchResult` type, `searchReleaseCatalog(q)` (multi-result, no cover art), `getReleaseByMbid(mbid)` (full detail). Factored `fetchReleaseDetail(mbid)` private helper shared with `searchRelease`.
+3. `backend/src/routes/catalog-search.ts`: `GET /` (?q=...) and `GET /:mbid` — both return 200 with empty/null on errors.
+4. `frontend/src/components/album-search.tsx`: Client component with idle→loading-results→results→loading-detail→preview phases. 400ms debounce on typing. Props: `onSelect`, `actionLabel`, `onCancel`.
+5. `frontend/src/app/actions/wish-list.ts`: `addToWishList` (upsert), `removeFromWishList`, `promoteToCollection` (insert record + delete item).
+6. `frontend/src/app/wishlist/page.tsx` + `wish-list-search.tsx` + `wish-list-item.tsx`: Full wish list management page. Promote supports single or multi-collection picker.
+7. `frontend/src/app/profile/[id]/page.tsx`: Parallel wish list query; read-only section shown if non-empty; "Manage →" link for own profile.
+8. `frontend/src/app/collection/new/page.tsx`: `showCatalogSearch` state + `handleCatalogSelect` callback + "Search catalog" button that renders `<AlbumSearch>` inline. Feeds existing approval card flow unchanged.
+9. Navigation: Heart icon in `collection-view.tsx` header; "My wish list →" teaser in `collection/page.tsx`.
+
+**Key Design Decisions:**
+- Wish list is per-user (not per-collection) so users can track personal acquisition goals
+- AlbumSearch shows results without cover art (fast) then fetches full detail on click
+- upsert on conflict (user_id, mbid) makes re-adding idempotent
+- promoteToCollection: insert first, delete after; delete failure is logged but not surfaced
+
+**Branch:** `feature/wish-list-catalog-search` (open)

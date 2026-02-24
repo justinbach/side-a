@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
 import { createClient } from '@/lib/supabase/client'
+import { AlbumSearch } from '@/components/album-search'
 
 type Track = {
   position: number
@@ -94,6 +95,7 @@ function NewRecordContent() {
   const [recognition, setRecognition] = useState<RecognitionState>({ status: 'idle' })
   const [musicBrainzMatch, setMusicBrainzMatch] = useState<MusicBrainzMetadata | null>(null)
   const [musicBrainzApproval, setMusicBrainzApproval] = useState<MusicBrainzApproval>({ status: 'none' })
+  const [showCatalogSearch, setShowCatalogSearch] = useState(false)
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
@@ -225,6 +227,51 @@ function NewRecordContent() {
       setMusicBrainzApproval({ status: 'none' })
       setRecognition({ status: 'idle' })
     }
+  }
+
+  // Catalog search select — populates form and shows approval card
+  const handleCatalogSelect = (release: {
+    id: string
+    title: string
+    artist: string
+    releaseDate: string | null
+    label: string | null
+    country: string | null
+    trackCount: number
+    tracks: { position: number; title: string; length: number | null }[]
+    coverArtUrl: string | null
+  }) => {
+    setShowCatalogSearch(false)
+    setTitle(release.title)
+    setArtist(release.artist)
+    setMusicBrainzMatch({
+      id: release.id,
+      title: release.title,
+      artist: release.artist,
+      coverArtUrl: release.coverArtUrl,
+      releaseDate: release.releaseDate,
+      label: release.label,
+      trackCount: release.trackCount,
+      tracks: release.tracks,
+    })
+    setMusicBrainzApproval({ status: 'pending' })
+    setRecognition({
+      status: 'success',
+      result: {
+        success: true,
+        extraction: { title: release.title, artist: release.artist, confidence: 'high' },
+        metadata: {
+          id: release.id,
+          title: release.title,
+          artist: release.artist,
+          coverArtUrl: release.coverArtUrl,
+          releaseDate: release.releaseDate,
+          label: release.label,
+          trackCount: release.trackCount,
+          tracks: release.tracks,
+        },
+      },
+    })
   }
 
   // Helper to convert data URL to Blob
@@ -728,19 +775,41 @@ function NewRecordContent() {
             />
           </div>
 
-          {/* Manual MusicBrainz lookup — shown when title+artist are filled, no scan is active, and no approval pending */}
-          {title.trim() && artist.trim() && !isRecognizing && musicBrainzApproval.status === 'none' && recognition.status !== 'searching' && (
-            <div>
-              <button
-                type="button"
-                onClick={handleManualLookup}
-                className="flex items-center gap-2 text-sm text-burnt-orange hover:underline"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                </svg>
-                Look up on MusicBrainz
-              </button>
+          {/* MusicBrainz lookup options — shown when no scan active and no approval pending */}
+          {!isRecognizing && musicBrainzApproval.status === 'none' && recognition.status !== 'searching' && (
+            <div className="space-y-2">
+              {title.trim() && artist.trim() && (
+                <button
+                  type="button"
+                  onClick={handleManualLookup}
+                  className="flex items-center gap-2 text-sm text-burnt-orange hover:underline"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Look up on MusicBrainz
+                </button>
+              )}
+              {showCatalogSearch ? (
+                <div className="pt-2">
+                  <AlbumSearch
+                    onSelect={handleCatalogSelect}
+                    actionLabel="Use This Album"
+                    onCancel={() => setShowCatalogSearch(false)}
+                  />
+                </div>
+              ) : (
+                <button
+                  type="button"
+                  onClick={() => setShowCatalogSearch(true)}
+                  className="flex items-center gap-2 text-sm text-walnut/60 hover:text-walnut hover:underline transition-colors"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                  Search catalog
+                </button>
+              )}
             </div>
           )}
 
