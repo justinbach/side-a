@@ -193,7 +193,7 @@ export default async function CollectionStatsPage({
   }
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <div className="max-w-4xl mx-auto">
         <Link
           href={`/collection?c=${collection.id}`}

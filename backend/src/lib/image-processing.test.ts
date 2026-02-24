@@ -66,4 +66,24 @@ describe('processAlbumImage', () => {
     expect(result.success).toBe(false)
     expect(result.error).toBe('No album detected')
   })
+
+  it('returns error when image data is invalid', async () => {
+    const analysis: AlbumBoundsAnalysis = {
+      albumDetected: true,
+      boundingBox: {
+        topLeft: { x: 0.1, y: 0.1 },
+        topRight: { x: 0.9, y: 0.1 },
+        bottomRight: { x: 0.9, y: 0.9 },
+        bottomLeft: { x: 0.1, y: 0.9 },
+      },
+      rotationDegrees: 0,
+      confidence: 'high',
+    }
+
+    const result = await processAlbumImage(Buffer.from('not-valid-image-data'), 'image/jpeg', analysis)
+
+    expect(result.success).toBe(false)
+    expect(result.appliedCrop).toBe(false)
+    expect(result.appliedRotation).toBe(0)
+  })
 })
