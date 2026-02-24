@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 
 type Album = {
@@ -24,12 +25,14 @@ type Props = {
 function RecPick({
   album,
   mood,
+  collectionId,
   currentUserId,
   logged,
   onLogged,
 }: {
   album: Album
   mood: string
+  collectionId: string
   currentUserId: string
   logged: boolean
   onLogged: (id: string) => void
@@ -58,7 +61,7 @@ function RecPick({
   return (
     <div className="flex items-center gap-3 bg-warm-white rounded-xl border border-walnut/10 p-3">
       {/* Cover */}
-      <div className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-tan/30">
+      <Link href={`/collection/${album.id}?c=${collectionId}`} className="flex-shrink-0 w-12 h-12 rounded-lg overflow-hidden bg-tan/30">
         {album.cover_image_url ? (
           <Image
             src={album.cover_image_url}
@@ -74,18 +77,18 @@ function RecPick({
             </svg>
           </div>
         )}
-      </div>
+      </Link>
 
       {/* Title + Artist + optional play count */}
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-walnut truncate">{album.title}</p>
+      <Link href={`/collection/${album.id}?c=${collectionId}`} className="flex-1 min-w-0 group">
+        <p className="text-sm font-medium text-walnut truncate group-hover:text-burnt-orange transition-colors">{album.title}</p>
         <p className="text-xs text-walnut/60 truncate">{album.artist}</p>
         {album.moodPlayCount !== undefined && (
           <p className="text-xs text-burnt-orange/70 mt-0.5">
             played {album.moodPlayCount}× this mood
           </p>
         )}
-      </div>
+      </Link>
 
       {/* Play button */}
       <button
@@ -115,7 +118,7 @@ function RecPick({
   )
 }
 
-export function PickResults({ tier1, tier2Candidates, mood, context, currentUserId }: Props) {
+export function PickResults({ tier1, tier2Candidates, mood, context, collectionId, currentUserId }: Props) {
   const [claudeResults, setClaudeResults] = useState<string[] | null>(null)
   const [loadingClaude, setLoadingClaude] = useState(tier2Candidates.length > 0)
   const [loggedPlays, setLoggedPlays] = useState<Set<string>>(new Set())
@@ -187,6 +190,7 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
                 key={album.id}
                 album={album}
                 mood={mood}
+                collectionId={collectionId}
                 currentUserId={currentUserId}
                 logged={loggedPlays.has(album.id)}
                 onLogged={handleLogged}
@@ -215,6 +219,7 @@ export function PickResults({ tier1, tier2Candidates, mood, context, currentUser
                   key={album.id}
                   album={album}
                   mood={mood}
+                  collectionId={collectionId}
                   currentUserId={currentUserId}
                   logged={loggedPlays.has(album.id)}
                   onLogged={handleLogged}
