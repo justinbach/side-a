@@ -14,9 +14,9 @@ export default async function FeedPage() {
 
   const thirtyMinutesAgo = new Date(Date.now() - 30 * 60 * 1000).toISOString()
 
-  // Two parallel queries — feed + live plays
+  // Three parallel queries — feed + live plays + following count
   // RLS handles visibility: follows + shared collections
-  const [{ data: feedPlays }, { data: livePlays }] = await Promise.all([
+  const [{ data: feedPlays }, { data: livePlays }, { count: followingCount }] = await Promise.all([
     supabase
       .from('plays')
       .select(`
@@ -45,19 +45,32 @@ export default async function FeedPage() {
       .neq('user_id', user.id)
       .gte('played_at', thirtyMinutesAgo)
       .order('played_at', { ascending: false }),
+
+    supabase
+      .from('follows')
+      .select('id', { count: 'exact', head: true })
+      .eq('follower_id', user.id),
   ])
 
   return (
     <main className="min-h-screen p-8 pb-24">
       <div className="max-w-2xl mx-auto">
-        {/* Find people link */}
-        <div className="mb-6 text-right">
-          <Link
-            href="/discover"
-            className="text-sm text-burnt-orange hover:text-burnt-orange/80 transition-colors"
-          >
-            Find people →
-          </Link>
+        {/* Page header */}
+        <div className="mb-8">
+          <div className="flex items-start justify-between mb-1">
+            <h1 className="font-serif text-3xl font-bold text-walnut">Activity Feed</h1>
+          </div>
+          <p className="text-walnut/60 mb-2">Recent plays from people you follow</p>
+          <div className="flex items-center gap-2 text-sm text-walnut/50">
+            <span>Following {followingCount ?? 0} {followingCount === 1 ? 'person' : 'people'}</span>
+            <span>·</span>
+            <Link
+              href="/discover"
+              className="text-burnt-orange hover:text-burnt-orange/80 transition-colors"
+            >
+              Find people →
+            </Link>
+          </div>
         </div>
 
         {/* Live listeners strip */}
