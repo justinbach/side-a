@@ -59,6 +59,49 @@ type MBReleaseDetail = {
   }[]
 }
 
+export type MusicBrainzSearchResult = {
+  mbid: string
+  title: string
+  artist: string
+  releaseDate: string | null
+  label: string | null
+  trackCount: number
+}
+
+// Fetch full release detail by MBID (tracks + cover art)
+async function fetchReleaseDetail(mbid: string): Promise<MusicBrainzRelease | null> {
+  const detailUrl = `${MUSICBRAINZ_API}/release/${mbid}?inc=recordings+artist-credits+labels&fmt=json`
+  const detailResponse = await rateLimitedFetch(detailUrl)
+
+  if (!detailResponse.ok) {
+    console.error('MusicBrainz release detail failed:', detailResponse.status)
+    return null
+  }
+
+  const detail = (await detailResponse.json()) as MBReleaseDetail
+  const coverArtUrl = await getCoverArtUrl(mbid)
+
+  const tracks = detail.media.flatMap((media) =>
+    media.tracks.map((track) => ({
+      position: track.position,
+      title: track.title,
+      length: track.length,
+    }))
+  )
+
+  return {
+    id: mbid,
+    title: detail.title,
+    artist: detail['artist-credit'].map((ac) => ac.name).join(''),
+    releaseDate: detail.date || null,
+    label: detail['label-info']?.[0]?.label?.name || null,
+    country: detail.country || null,
+    trackCount: tracks.length,
+    tracks,
+    coverArtUrl,
+  }
+}
+
 export async function searchRelease(title: string, artist: string): Promise<MusicBrainzRelease | null> {
   // Search for the release
   const query = encodeURIComponent(`release:"${title}" AND artist:"${artist}"`)
@@ -84,41 +127,36 @@ export async function searchRelease(title: string, artist: string): Promise<Musi
   }
 
   const release = searchData.releases[0]
+  return fetchReleaseDetail(release.id)
+}
 
-  // Get full release details including tracks
-  const detailUrl = `${MUSICBRAINZ_API}/release/${release.id}?inc=recordings+artist-credits+labels&fmt=json`
-  const detailResponse = await rateLimitedFetch(detailUrl)
+// Multi-result catalog search — returns lightweight results, no per-result detail fetches
+export async function searchReleaseCatalog(query: string): Promise<MusicBrainzSearchResult[]> {
+  const encodedQuery = encodeURIComponent(query)
+  const searchUrl = `${MUSICBRAINZ_API}/release?query=${encodedQuery}&limit=10&fmt=json`
 
-  if (!detailResponse.ok) {
-    console.error('MusicBrainz release detail failed:', detailResponse.status)
-    return null
+  const response = await rateLimitedFetch(searchUrl)
+  if (!response.ok) {
+    console.error('MusicBrainz catalog search failed:', response.status)
+    return []
   }
 
-  const detail = (await detailResponse.json()) as MBReleaseDetail
+  const data = (await response.json()) as MBSearchResult
+  if (!data.releases) return []
 
-  // Get cover art from Cover Art Archive
-  const coverArtUrl = await getCoverArtUrl(release.id)
+  return data.releases.map((r) => ({
+    mbid: r.id,
+    title: r.title,
+    artist: r['artist-credit']?.map((ac) => ac.name).join('') || 'Unknown Artist',
+    releaseDate: r.date || null,
+    label: r['label-info']?.[0]?.label?.name || null,
+    trackCount: r['track-count'] || 0,
+  }))
+}
 
-  // Extract tracks from all media (discs)
-  const tracks = detail.media.flatMap((media) =>
-    media.tracks.map((track) => ({
-      position: track.position,
-      title: track.title,
-      length: track.length,
-    }))
-  )
-
-  return {
-    id: release.id,
-    title: detail.title,
-    artist: detail['artist-credit'].map((ac) => ac.name).join(''),
-    releaseDate: detail.date || null,
-    label: detail['label-info']?.[0]?.label?.name || null,
-    country: detail.country || null,
-    trackCount: tracks.length,
-    tracks,
-    coverArtUrl,
-  }
+// Full release detail by MBID — includes cover art and track list
+export async function getReleaseByMbid(mbid: string): Promise<MusicBrainzRelease | null> {
+  return fetchReleaseDetail(mbid)
 }
 
 type CoverArtResponse = {

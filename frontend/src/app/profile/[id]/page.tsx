@@ -73,18 +73,26 @@ export default async function ProfilePage({
     isFollowing = !!followCheck
   }
 
-  // Fetch recent plays (RLS will handle privacy)
-  const { data: allPlays } = await supabase
-    .from('plays')
-    .select(`
-      id,
-      played_at,
-      mood,
-      records(id, title, artist, cover_image_url, collection_id)
-    `)
-    .eq('user_id', profileId)
-    .order('played_at', { ascending: false })
-    .limit(50)
+  // Fetch recent plays and wish list in parallel (RLS handles privacy)
+  const [{ data: allPlays }, { data: wishListItems }] = await Promise.all([
+    supabase
+      .from('plays')
+      .select(`
+        id,
+        played_at,
+        mood,
+        records(id, title, artist, cover_image_url, collection_id)
+      `)
+      .eq('user_id', profileId)
+      .order('played_at', { ascending: false })
+      .limit(50),
+    supabase
+      .from('wish_list_items')
+      .select('id, title, artist, cover_art_url, release_date, track_count')
+      .eq('user_id', profileId)
+      .order('added_at', { ascending: false })
+      .limit(20),
+  ])
 
   // Calculate basic stats
   const now = new Date()
@@ -145,6 +153,56 @@ export default async function ProfilePage({
             </Link>
           </div>
         </div>
+
+        {/* Wish List — shown if non-empty */}
+        {wishListItems && wishListItems.length > 0 && (
+          <div className="mb-8">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-serif text-xl text-walnut flex items-center gap-2">
+                Wish List
+                <svg className="w-5 h-5 text-burnt-orange/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+                </svg>
+              </h2>
+              {isOwnProfile && (
+                <a href="/wishlist" className="text-sm text-burnt-orange hover:text-burnt-orange/80 transition-colors">
+                  Manage →
+                </a>
+              )}
+            </div>
+            <div className="space-y-2">
+              {wishListItems.map((item) => {
+                const year = item.release_date ? item.release_date.split('-')[0] : null
+                return (
+                  <div key={item.id} className="bg-warm-white rounded-xl border border-walnut/10 p-3 flex items-center gap-3">
+                    {item.cover_art_url ? (
+                      <Image
+                        src={item.cover_art_url}
+                        alt={item.title}
+                        width={40}
+                        height={40}
+                        className="w-10 h-10 rounded object-cover flex-shrink-0"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 rounded bg-tan flex items-center justify-center flex-shrink-0">
+                        <svg className="w-4 h-4 text-walnut/30" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <circle cx="12" cy="12" r="10" strokeWidth="1.5" />
+                          <circle cx="12" cy="12" r="3" strokeWidth="1.5" />
+                        </svg>
+                      </div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-walnut truncate">{item.title}</p>
+                      <p className="text-xs text-walnut/60 truncate">
+                        {item.artist}{year ? ` · ${year}` : ''}
+                      </p>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Recent Activity */}
         <div>

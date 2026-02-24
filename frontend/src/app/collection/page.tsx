@@ -257,6 +257,16 @@ export default async function CollectionPage({
           </div>
         </section>
 
+        {/* Wish list teaser */}
+        <div className="text-right -mt-6">
+          <Link
+            href="/wishlist"
+            className="text-sm text-burnt-orange hover:text-burnt-orange/80 transition-colors"
+          >
+            My wish list →
+          </Link>
+        </div>
+
         {/* Activity Feed */}
         <section>
           <div className="flex items-center justify-between mb-3">
