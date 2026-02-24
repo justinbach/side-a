@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
+import { createPortal } from 'react-dom'
 import Link from 'next/link'
 
 type FollowedUser = {
@@ -10,8 +11,11 @@ type FollowedUser = {
 
 export function FollowingButton({ following }: { following: FollowedUser[] }) {
   const [open, setOpen] = useState(false)
+  const [mounted, setMounted] = useState(false)
   const modalRef = useRef<HTMLDivElement>(null)
   const count = following.length
+
+  useEffect(() => { setMounted(true) }, [])
 
   // Close on Escape
   useEffect(() => {
@@ -40,7 +44,7 @@ export function FollowingButton({ following }: { following: FollowedUser[] }) {
         Following {count} {count === 1 ? 'person' : 'people'}
       </button>
 
-      {open && (
+      {open && mounted && createPortal(
         <div
           className="fixed inset-0 z-50 flex items-end sm:items-center justify-center"
           role="dialog"
@@ -113,7 +117,8 @@ export function FollowingButton({ following }: { following: FollowedUser[] }) {
               )}
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </>
   )
