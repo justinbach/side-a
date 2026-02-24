@@ -5,6 +5,7 @@ import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { CollectionPreview } from '@/components/collection-preview'
 import { FeedList } from '@/components/feed-list'
 import { DashboardCollectionSwitcher } from '@/components/dashboard-collection-switcher'
+import { PullToRefresh } from '@/components/pull-to-refresh'
 
 const MOODS = [
   { value: 'Morning', emoji: '🌅' },
@@ -142,8 +143,9 @@ export default async function CollectionPage({
   const isOwner = collection.owner_id === user.id
 
   return (
-    <main className="min-h-screen p-8 pb-24">
-      <div className="max-w-3xl mx-auto space-y-10">
+    <main className="min-h-screen pb-24">
+      <PullToRefresh>
+      <div className="p-8 max-w-3xl mx-auto space-y-10">
         {/* Now Spinning banner — current user's active play */}
         {(() => {
           const nowPlayingRecord = nowPlaying
@@ -270,6 +272,7 @@ export default async function CollectionPage({
           <FeedList plays={feedPlays || []} currentUserId={user.id} />
         </section>
       </div>
+      </PullToRefresh>
     </main>
   )
 }

@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createClient } from '@/lib/supabase/server'
 import { FeedList } from '@/components/feed-list'
 import { NowPlayingBar } from '@/components/now-playing-bar'
+import { PullToRefresh } from '@/components/pull-to-refresh'
 
 export default async function FeedPage() {
   const supabase = await createClient()
@@ -53,8 +54,9 @@ export default async function FeedPage() {
   ])
 
   return (
-    <main className="min-h-screen p-8 pb-24">
-      <div className="max-w-2xl mx-auto">
+    <main className="min-h-screen pb-24">
+      <PullToRefresh>
+      <div className="p-8 max-w-2xl mx-auto">
         {/* Page header */}
         <div className="mb-8">
           <div className="flex items-start justify-between mb-1">
@@ -86,6 +88,7 @@ export default async function FeedPage() {
         {/* Feed */}
         <FeedList plays={feedPlays || []} currentUserId={user.id} />
       </div>
+      </PullToRefresh>
     </main>
   )
 }
