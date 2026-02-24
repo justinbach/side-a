@@ -1,21 +1,10 @@
 'use client'
 
-import { useEffect, useState } from 'react'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { createClient } from '@/lib/supabase/client'
 
 export function BottomNav() {
   const pathname = usePathname()
-  const router = useRouter()
-  const [userId, setUserId] = useState<string | null>(null)
-
-  useEffect(() => {
-    const supabase = createClient()
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setUserId(user.id)
-    })
-  }, [])
 
   // Hide on auth pages
   if (pathname === '/login' || pathname === '/signup') return null
@@ -67,17 +56,12 @@ export function BottomNav() {
       </Link>
 
       {/* Profile */}
-      <button
-        onClick={() => {
-          if (userId) router.push(`/profile/${userId}`)
-        }}
-        className={tabClass('/profile')}
-      >
+      <Link href="/profile/me" className={tabClass('/profile')}>
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.75} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
         </svg>
         <span>Profile</span>
-      </button>
+      </Link>
     </nav>
   )
 }
