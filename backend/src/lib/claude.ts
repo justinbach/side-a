@@ -31,7 +31,7 @@ export type AlbumBoundsAnalysis = {
 
 export async function extractAlbumInfo(imageBase64: string, mimeType: string): Promise<AlbumExtraction> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 256,
     messages: [
       {
@@ -100,7 +100,7 @@ export async function rankAlbumsForContext(
     .join('\n')
 
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     system:
       'You are a music recommender helping a vinyl collector choose what to listen to next. ' +
@@ -128,7 +128,7 @@ export async function rankAlbumsForContext(
 
 export async function analyzeAlbumBounds(imageBase64: string, mimeType: string): Promise<AlbumBoundsAnalysis> {
   const response = await anthropic.messages.create({
-    model: 'claude-sonnet-4-20250514',
+    model: 'claude-sonnet-4-6',
     max_tokens: 512,
     messages: [
       {
