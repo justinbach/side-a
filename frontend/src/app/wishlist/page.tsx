@@ -42,7 +42,7 @@ export default async function WishListPage() {
         <div className="flex items-center gap-3 mb-8">
           <h1 className="font-serif text-3xl font-bold text-walnut">My Wish List</h1>
           <svg className="w-6 h-6 text-burnt-orange" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
           </svg>
         </div>
 
@@ -51,7 +51,7 @@ export default async function WishListPage() {
         {!wishListItems || wishListItems.length === 0 ? (
           <div className="bg-warm-white rounded-xl border border-walnut/10 p-12 text-center">
             <svg className="w-10 h-10 text-walnut/20 mx-auto mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M5 5a2 2 0 012-2h10a2 2 0 012 2v16l-7-3.5L5 21V5z" />
             </svg>
             <p className="text-walnut/60 mb-2">Your wish list is empty</p>
             <p className="text-sm text-walnut/40">Search for albums you want to acquire</p>
