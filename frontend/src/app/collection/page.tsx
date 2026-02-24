@@ -1,11 +1,9 @@
 import { redirect } from 'next/navigation'
 import Link from 'next/link'
-import Image from 'next/image'
 import { createClient } from '@/lib/supabase/server'
 import { createClient as createAdminClient } from '@supabase/supabase-js'
 import { CollectionPreview } from '@/components/collection-preview'
 import { FeedList } from '@/components/feed-list'
-import { SignOutButton } from '@/components/sign-out-button'
 import { DashboardCollectionSwitcher } from '@/components/dashboard-collection-switcher'
 
 const MOODS = [
@@ -144,16 +142,7 @@ export default async function CollectionPage({
   const isOwner = collection.owner_id === user.id
 
   return (
-    <main className="min-h-screen p-8">
-      {/* Header */}
-      <header className="max-w-3xl mx-auto flex justify-between items-center mb-10">
-        <Link href="/collection" className="flex items-center gap-3">
-          <Image src="/logo.svg" alt="Side A" width={40} height={40} />
-          <span className="font-serif text-3xl font-bold text-walnut">Side A</span>
-        </Link>
-        <SignOutButton />
-      </header>
-
+    <main className="min-h-screen p-8 pb-24">
       <div className="max-w-3xl mx-auto space-y-10">
         {/* Now Spinning banner — current user's active play */}
         {(() => {

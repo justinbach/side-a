@@ -83,7 +83,7 @@ export default async function CollectionSettingsPage({
     .is('accepted_at', null)
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <div className="max-w-2xl mx-auto">
         <Link
           href={`/collection?c=${collection.id}`}

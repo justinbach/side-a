@@ -128,7 +128,7 @@ export default async function RecordDetailPage({
   }
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <div className="max-w-4xl mx-auto">
         <Link
           href="/collection"

@@ -398,7 +398,7 @@ function NewRecordContent() {
   const isRecognizing = ['uploading', 'analyzing', 'searching'].includes(recognition.status)
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <div className="max-w-xl mx-auto">
         <Link
           href="/collection"

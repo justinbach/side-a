@@ -50,7 +50,7 @@ export default async function PickPage({
   // --- Mood picker (no mood selected) ---
   if (!selectedMood) {
     return (
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen p-8 pb-24">
         <header className="max-w-lg mx-auto flex items-center gap-3 mb-10">
           <Link href={collectionId ? `/collection/browse?c=${collectionId}` : '/collection'} className="text-walnut/50 hover:text-walnut transition-colors">
             ←
@@ -96,7 +96,7 @@ export default async function PickPage({
 
   if (!records || records.length === 0) {
     return (
-      <main className="min-h-screen p-8">
+      <main className="min-h-screen p-8 pb-24">
         <div className="max-w-lg mx-auto">
           <Link href={`/collection/pick?c=${collectionId}`} className="text-walnut/50 hover:text-walnut transition-colors text-sm">
             ← Back
@@ -137,7 +137,7 @@ export default async function PickPage({
   const context = contextParam ? decodeURIComponent(contextParam) : MOOD_CONTEXTS[selectedMood]
 
   return (
-    <main className="min-h-screen p-8">
+    <main className="min-h-screen p-8 pb-24">
       <header className="max-w-lg mx-auto flex items-center gap-3 mb-8">
         <Link href={`/collection/pick?c=${collectionId}`} className="text-walnut/50 hover:text-walnut transition-colors">
           ←
