@@ -11,8 +11,22 @@ const app = express()
 const PORT = process.env.PORT || 3001
 
 // Middleware
+const allowedOrigins = [
+  process.env.FRONTEND_URL,
+  'http://localhost:3000',
+  'http://localhost:3001',
+].filter(Boolean) as string[]
+
 app.use(cors({
-  origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+  origin: (origin, callback) => {
+    // Allow requests with no origin (curl, mobile apps, etc.)
+    if (!origin) return callback(null, true)
+    // Allow configured origin and localhost
+    if (allowedOrigins.some(o => o === origin)) return callback(null, true)
+    // Allow all Vercel deployments (preview + production)
+    if (/\.vercel\.app$/.test(origin)) return callback(null, true)
+    callback(new Error(`CORS: origin ${origin} not allowed`))
+  },
   credentials: true,
 }))
 app.use(express.json())
